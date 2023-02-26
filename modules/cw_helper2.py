@@ -3,9 +3,9 @@ import struct
 import pandas as pd
 import os
 import datetime
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from matplotlib import style
+#import matplotlib.pyplot as plt
+#import matplotlib.animation as animation
+#from matplotlib import style
 import numpy as np
 import random
 import serial
@@ -50,20 +50,20 @@ def unpack_bytes(bytes):
     unpackaged1 = struct.unpack(unpack_format, bytes)
     return(unpackaged1)
 
-def save_fig(fig_id, folder_descrip , tight_layout=True,\
-    fig_extension="png", resolution=600):
+# def save_fig(fig_id, folder_descrip , tight_layout=True,\
+#     fig_extension="png", resolution=600):
 
-    now = datetime.datetime.today()
-    now = now.strftime("%Y-%m-%d")
-    IMAGES_PATH = os.path.join(".", "images", now, folder_descrip)
-    os.makedirs(IMAGES_PATH, exist_ok=True)
-    fig_id = now + " " + fig_id
-    path = os.path.join(IMAGES_PATH, fig_id + " " +\
-            folder_descrip + "." + fig_extension)
-    print("Saving figure", fig_id)
-    if tight_layout:
-        plt.tight_layout()
-    plt.savefig(path, format=fig_extension, dpi=resolution)
+#     now = datetime.datetime.today()
+#     now = now.strftime("%Y-%m-%d")
+#     IMAGES_PATH = os.path.join(".", "images", now, folder_descrip)
+#     os.makedirs(IMAGES_PATH, exist_ok=True)
+#     fig_id = now + " " + fig_id
+#     path = os.path.join(IMAGES_PATH, fig_id + " " +\
+#             folder_descrip + "." + fig_extension)
+#     print("Saving figure", fig_id)
+#     if tight_layout:
+#         plt.tight_layout()
+    # plt.savefig(path, format=fig_extension, dpi=resolution)
 
 def make_txt_file():
     now = datetime.datetime.today()
@@ -88,23 +88,23 @@ def get_command_message(main_bytes):
     main_bytes_c = ffibuilder.new("char[]", main_bytes)
 
 
-# Create figure for plotting
-fig = plt.figure()
-ax = fig.add_subplot(1, 1, 1)
-xs = [] #store trials here (n)
-ys = [] #store relative frequency here
-rs = [] #for theoretical probability
+# # Create figure for plotting
+# fig = plt.figure()
+# ax = fig.add_subplot(1, 1, 1)
+# xs = [] #store trials here (n)
+# ys = [] #store relative frequency here
+# rs = [] #for theoretical probability
 
-# This function is called periodically from FuncAnimation
-def animate(frame, tick, data):
+# # This function is called periodically from FuncAnimation
+# def animate(frame, tick, data):
 
-    # Draw x and y lists
-    ax.clear()
-    ax.plot(tick, data, label="Actual RPM")
+#     # Draw x and y lists
+#     ax.clear()
+#     ax.plot(tick, data, label="Actual RPM")
 
-    # Format plot
-    plt.xticks(rotation=45, ha='right')
-    plt.subplots_adjust(bottom=0.30)
-    plt.title('Animating a variable...')
-    plt.ylabel('RPM')
-    plt.axis([1, None, 0, 1.1]) #Use for arbitrary number of trials
+#     # Format plot
+#     plt.xticks(rotation=45, ha='right')
+#     plt.subplots_adjust(bottom=0.30)
+#     plt.title('Animating a variable...')
+#     plt.ylabel('RPM')
+#     plt.axis([1, None, 0, 1.1]) #Use for arbitrary number of trials

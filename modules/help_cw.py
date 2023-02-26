@@ -78,11 +78,13 @@ def byte_unstuffing(byte_array):
     return byte_array
 
 def check_crcs(decoded_numbers):
-    if (decoded_numbers[len(decoded_numbers)-2] == \
+    if (decoded_numbers[len(decoded_numbers)-2] == 
         decoded_numbers[len(decoded_numbers)-1]):
-        print("CRC's are equal")
+        return True
+        #print("CRC's are equal")
     else:
-        print("CRC's are NOT equal")
+        return False
+        #print("CRC's are NOT equal")
 
 def decode_bytes(bytes):
     """

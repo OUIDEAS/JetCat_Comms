@@ -1,20 +1,22 @@
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
+# import matplotlib
+#matplotlib.use('TkAgg')
+# import matplotlib.pyplot as plt
 import datetime
 from cffi import FFI
 import os
-
+import pickle
+import sys
 import modules.help_cw as help_cw
 import modules.cw_helper2 as cw_helper2
 from _crc.lib import pi_approx, get_crc16z
+#from pandasgui import show
 
 ffibuilder = FFI()
 
-file_name = input("Enter full path to bin file: ")
-folder_input = input("Enter description for image folder: ")
+file_name = sys.argv[1]#input("Enter full path to bin file: ")
+#folder_input = input("Enter description for image folder: ")
 
 with open(file_name, 'rb',) as file:
     my_bytes = file.read()
@@ -47,17 +49,17 @@ for i in range(0, len(my_bytes)-100): # Skip putty header and last bytes
         decoded_numbers = help_cw.decode_line(unstuffed_line)
         decoded_numbers.append(crc16_calculation)
 
-        print("\nData packet read this loop: ")
-        print(data_packet)
-        print("Unsuffed line: ")
-        print(unstuffed_line)
-        print("Data sent to crc16: ", datastring)
-        print("Length of data sent to crc16: ", length_line)
+        # print("\nData packet read this loop: ")
+        # print(data_packet)
+        # print("Unsuffed line: ")
+        # print(unstuffed_line)
+        # print("Data sent to crc16: ", datastring)
+        # print("Length of data sent to crc16: ", length_line)
         
         
         list_of_list.append(decoded_numbers)
-        print("CRC given: ", decoded_numbers[len(decoded_numbers)-2])
-        print("CRC calculated: ", decoded_numbers[len(decoded_numbers)-1])
+        # print("CRC given: ", decoded_numbers[len(decoded_numbers)-2])
+        # print("CRC calculated: ", decoded_numbers[len(decoded_numbers)-1])
 
         help_cw.check_crcs(decoded_numbers)
 
@@ -88,25 +90,28 @@ for i in range(len(frame)):
 
 
 # Plots
-frame.plot()
-help_cw.save_fig("all_data", folder_input)
-for col in frame.columns:
-    frame.plot(y=col, use_index=True, style='o')
-    help_cw.save_fig(col, folder_input)
+# frame.plot()
+# help_cw.save_fig("all_data", folder_input)
+# for col in frame.columns:
+#     frame.plot(y=col, use_index=True, style='o')
+#     help_cw.save_fig(col, folder_input)
 
 
-plt.figure()
-plt.plot(frame.index, is_crc_equal)
-help_cw.save_fig("is_equal", folder_input)
+# plt.figure()
+# plt.plot(frame.index, is_crc_equal)
+# help_cw.save_fig("is_equal", folder_input)
 
 # Save the data frame to a text file
-now = datetime.datetime.today()
-now = now.strftime("%Y-%m-%d")
-now_more = datetime.datetime.today()
-now_more = now_more.strftime("%Y-%m-%d_%H:%M:%S")
-FILE_PATH = os.path.join(".", "decoded_data", now )
+# now = datetime.datetime.today()
+# now = now.strftime("%Y-%m-%d")
+# now_more = datetime.datetime.today()
+# now_more = now_more.strftime("%Y-%m-%d_%H:%M:%S")
+# FILE_PATH = os.path.join(".", "decoded_data", now )
 
-os.makedirs(FILE_PATH, exist_ok=True)
-frame.to_csv(os.path.join(FILE_PATH, now_more+"_decoded_data.csv"))
+#os.makedirs(FILE_PATH, exist_ok=True)
+frame.to_csv(file_name+".csv")#,index=False)
 
-plt.show()
+with open(file_name+'.pickle', 'wb') as handle:
+    pickle.dump(frame, handle, protocol=pickle.HIGHEST_PROTOCOL)
+# plt.show()
+#show(frame)
