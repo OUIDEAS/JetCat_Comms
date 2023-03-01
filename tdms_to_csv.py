@@ -22,4 +22,3 @@ frame.to_csv(base_path + ".csv", index=False) # Write csv to same location
 
 with open (base_path+'.pickle', 'wb') as handle:
     pickle.dump(frame, handle, protocol=pickle.HIGHEST_PROTOCOL)
-    
