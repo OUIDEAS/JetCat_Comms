@@ -3,7 +3,7 @@ tdms_to_csv.py
 
 Created by Colton Wright on 2/27/2023
 
-Takes binary data file from NI USB-6210 and MCCDaq E-TC and converts to a CSV
+Takes binary TDMS data file from NI USB-6210 and MCCDaq E-TC and converts to a CSV
 """
 
 import os
