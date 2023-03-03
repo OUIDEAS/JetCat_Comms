@@ -7,6 +7,8 @@ cell for calibration, tell the computer when the weights are hung, and
 automatically sample the load cell for a certain period of time, saving the
 files together in the correct format so that calibration_curve.py can generate
 the curves for you right after calibration.
+
+ONLY RUNS ON WINDOWS 10
 """
 
 import numpy as np
