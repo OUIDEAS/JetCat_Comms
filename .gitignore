@@ -1,5 +1,9 @@
-# Ignore anything in data directory
+# Ignore anything in these directories
 data/
+images/
+documentation/
+anims/
+throttle_curves/
 
 # Python & C .gitignore put together
 _crc.c
