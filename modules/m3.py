@@ -1,4 +1,5 @@
 import serial
+from queue import Queue # Allow easy, safe exchange of data between threads
 
 def write_file_to_port(file_path):
     """
