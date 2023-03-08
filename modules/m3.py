@@ -1,3 +1,4 @@
+import numpy as np
 import serial
 import datetime
 import os
@@ -37,7 +38,7 @@ def read_port(queue1, bin_file_path, log_file_path, testing):
             if testing:
                 time.sleep(.05) # Slow to 20 Hz for testing readings
 
-def packet_to_csv(data_packet, csv_writer):
+def packet_to_csv(data_packet, csv_writer, start_time):
     # print(data_packet)
     data_packet = data_packet[:-2] # Clip off the framing bytes
     # print(data_packet)
@@ -54,10 +55,10 @@ def packet_to_csv(data_packet, csv_writer):
     if len(unstuffed_line) == 33:
         processed_packet = decode_line(unstuffed_line)
         processed_packet.append(crc16_calculation)
-        processed_packet.insert(0, time.time()) # Put a timestamp at [0]
+        processed_packet.insert(0, time.time()-start_time) # Put a timestamp at [0]
         csv_writer.writerow(processed_packet)
 
-        return processed_packet
+        # return processed_packet
 
 def byte_unstuffing(byte_array):
     """
@@ -138,3 +139,38 @@ def make_filenames():
     log = os.path.join(FILE_PATH, (now_more + "_log.txt"))
     csv = os.path.join(FILE_PATH, (now_more + "_data.csv"))
     return bin_data, log, csv
+
+
+
+# csv processing
+def csv_thread_func(queue1, csv_filename):
+    # Open csv for writing packets:
+    start_time = time.time()
+    with open(csv_filename, 'a') as csv_file:
+        cw_writer = csv.writer(csv_file, delimiter=',')
+        cw_writer.writerow(["Time", "Engine_Address", "Message_Descriptor", "Sequence_Number",
+            "Data_Byte_Count", "RPM_(setpoint)", "RPM_(setpoint%)", "RPM_(actual)", 
+            "RPM_(actual%)", "EGT", "Pump_Volts_(setpoint)", "Pump_Volts_(actual)", 
+            "State", "Battery_Volts", "Battery_Volt_Level%", "Battery_Current", 
+            "Airspeed", "PWM-THR", "PWM-AUX","CRC16_Given","CRC16_Calculated"])
+        while True:
+            # Process the queue. Pull, process, timestamp, save to csv, animate.
+            data_packet = queue1.get()
+            packet_to_csv(data_packet, cw_writer, start_time)
+
+
+
+
+
+
+# Plotting
+def update(frame, csv_filename, ax):
+    data = np.genfromtxt(csv_filename, delimiter=',')
+    # print(data)
+    x = data[:, 0]
+    y = data[:, 7]
+    y2 = data[:, 8]
+    # print("y::", y)
+    ax.clear()
+    ax.plot(x,y)
+    ax.grid(True)
