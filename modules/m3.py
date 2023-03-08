@@ -168,26 +168,26 @@ def update(frame, csv_filename, ax, ax2, ax3, ax4):
     data = np.genfromtxt(csv_filename, delimiter=',')
     # print(data)
     x = data[:, 0]
-    y = data[:, 7]
-    y2 = data[:, 9]
-    y3 = data[:, 5]
-    y4 = data[:, 11]
+    y = data[:, 5]
+    y2 = data[:, 7]
+    y3 = data[:, 11]
+    y4 = data[:, 9]
     # print("y::", y)
     ax.clear()
     ax.plot(x,y)
     ax.grid(True)
     ax.set_xlabel("Time [s]")
-    ax.set_ylabel("RPM_(actual)")
+    ax.set_ylabel("RPM_(setpoint)")
     ax2.clear()
     ax2.plot(x,y2)
     ax2.grid(True)
     ax2.set_xlabel("Time [s]")
-    ax2.set_ylabel("EGT")
+    ax2.set_ylabel("RPM_(actual)")
     ax3.clear()
     ax3.plot(x,y3)
     ax3.grid(True)
     ax3.set_xlabel("Time [s]")
-    ax3.set_ylabel("EGT")
+    ax3.set_ylabel("Pump_Volts_(actual)")
     ax4.clear()
     ax4.plot(x,y4)
     ax4.grid(True)
