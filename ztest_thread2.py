@@ -37,10 +37,15 @@ test_thread.start() # For simulating a PRO-Interface on the serial port
 csv_thread.start()
 
 # CSV is being written to, let's plot...
-time.sleep(5)
+time.sleep(.5)
 fig = plt.figure()
-ax = fig.add_subplot(1,1,1)
+fig.tight_layout()
+ax = fig.add_subplot(2,2,1)
+ax2 = fig.add_subplot(2,2,2)
+ax3 = fig.add_subplot(2,2,3)
+ax4 = fig.add_subplot(2,2,4)
+
 ax.grid(True)
-ani = animation.FuncAnimation(fig, m3.update, fargs=(csv_filename, ax,), interval = 100, blit=False, save_count=10)
+ani = animation.FuncAnimation(fig, m3.update, fargs=(csv_filename, ax,ax2,ax3,ax4), interval = 100, blit=False, save_count=10)
 plt.grid(True)
 plt.show()

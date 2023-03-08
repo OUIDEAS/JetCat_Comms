@@ -19,7 +19,7 @@ def write_file_to_port(file_path):
     """
     f = open(file_path, 'rb')
     to_write = f.read()
-    with serial.Serial('/dev/pts/5', baudrate=115200, timeout=.25) as ser:
+    with serial.Serial('/dev/pts/3', baudrate=115200, timeout=.25) as ser:
         ser.write(to_write)
 
 def read_port(queue1, bin_file_path, log_file_path, testing):
@@ -27,7 +27,7 @@ def read_port(queue1, bin_file_path, log_file_path, testing):
     Read the serial port of the PRO-Interface and save to a bin file. Push the
     data packets into the queue so that it can be processed in real time.
     """
-    with serial.Serial('/dev/pts/4', baudrate=115200, timeout=.25) as ser, \
+    with serial.Serial('/dev/pts/2', baudrate=115200, timeout=.25) as ser, \
     open(bin_file_path, 'ab') as dat_file, \
     open(log_file_path, 'a') as log_file:
         while True:
@@ -36,7 +36,7 @@ def read_port(queue1, bin_file_path, log_file_path, testing):
             queue1.put(data_packet)
 
             if testing:
-                time.sleep(.05) # Slow to 20 Hz for testing readings
+                time.sleep(.001) # Slow to 20 Hz for testing readings
 
 def packet_to_csv(data_packet, csv_writer, start_time):
     # print(data_packet)
@@ -164,13 +164,32 @@ def csv_thread_func(queue1, csv_filename):
 
 
 # Plotting
-def update(frame, csv_filename, ax):
+def update(frame, csv_filename, ax, ax2, ax3, ax4):
     data = np.genfromtxt(csv_filename, delimiter=',')
     # print(data)
     x = data[:, 0]
     y = data[:, 7]
-    y2 = data[:, 8]
+    y2 = data[:, 9]
+    y3 = data[:, 5]
+    y4 = data[:, 11]
     # print("y::", y)
     ax.clear()
     ax.plot(x,y)
     ax.grid(True)
+    ax.set_xlabel("Time [s]")
+    ax.set_ylabel("RPM_(actual)")
+    ax2.clear()
+    ax2.plot(x,y2)
+    ax2.grid(True)
+    ax2.set_xlabel("Time [s]")
+    ax2.set_ylabel("EGT")
+    ax3.clear()
+    ax3.plot(x,y3)
+    ax3.grid(True)
+    ax3.set_xlabel("Time [s]")
+    ax3.set_ylabel("EGT")
+    ax4.clear()
+    ax4.plot(x,y4)
+    ax4.grid(True)
+    ax4.set_xlabel("Time [s]")
+    ax4.set_ylabel("EGT")
