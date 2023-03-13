@@ -159,8 +159,20 @@ def csv_thread_func(queue1, csv_filename):
             packet_to_csv(data_packet, cw_writer, start_time)
 
 
+# Not sure if these work yet!
+def crc16_update2(crc, data):
+    data ^= crc & 0xFF
+    data ^= data << 4
+    ret_val = (((data << 8) | ((crc & 0xFF00) >> 8))
+        ^ (data >> 4)
+        ^ (data << 3))
+    return ret_val & 0xFFFF
 
-
+def get_crc16z2(data, length):
+    crc = 0
+    for i in range(length):
+        crc = crc16_update(crc, data[i])
+    return crc
 
 
 # Plotting
