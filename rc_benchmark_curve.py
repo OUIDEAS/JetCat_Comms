@@ -20,9 +20,12 @@ f1["dThrust peaks"] = f1["dThrust"][f1["dThrust"] > 0.005]
 f1["dThrust valleys"] = f1["dThrust"][f1["dThrust"] < -0.005]
 f1.fillna(0, inplace=True)
 f1["dThrust spikes"] = f1["dThrust peaks"] + f1["dThrust valleys"]
+f1["dThrust spikes"] = abs(f1["dThrust spikes"])
 f1.fillna(0, inplace=True)
-c_max_index = argrelextrema(f1["dThrust spikes"], np.greater, order=5)
 
+extrema_index = argrelextrema(f1["dThrust spikes"].values, np.greater, order=2)[0]
+extrema_rows = f1.iloc[extrema_index]
+print(extrema_rows)
 
 f1.plot(x="Time (s)", y="Thrust (kgf)")
 f1.plot(x="Time (s)", y="dThrust")
