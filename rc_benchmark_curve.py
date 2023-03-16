@@ -21,7 +21,7 @@ def save_fig2(parent_directory, file_name, tight_layout=True,\
     print("Saving plots to ", path)
 # print("Input:", sys.argv[1])
 
-folder_path = "/home/colton/Documents/GitHub/OUIDEAS/JetCat_Comms/data/RC_Benchmark/Log_2023-03-16_160024/Log_2023-03-16_160024.csv" # Full path to file
+folder_path = r"C:\Users\colto\Documents\GitHub\JetCat_Comms\data\RC_Benchmark\Log_2023-03-16_160024\Log_2023-03-16_160024.csv" # Full path to file
 parent_directory = os.path.dirname(folder_path)
 f1 = pd.read_csv(folder_path, delimiter=',', on_bad_lines='skip')
 
@@ -111,6 +111,8 @@ plt.plot(x, tr_coeffs[3]*x**3+tr_coeffs[2]*x**2+tr_coeffs[1]*x+tr_coeffs[0], 'r-
 plt.legend()
 plt.grid(True)
 plt.title("Thrust v RPM")
+plt.xlabel("Time [s]")
+plt.ylabel("Thrust (kgf)")
 save_fig2(parent_directory, "thrust_curve")
 print("Thrust v RPM:")
 print(str(format(tr_coeffs[3], '.4e'))+"x^3+"+str(format(tr_coeffs[2], '.4e'))+"x^2+"+str(format(tr_coeffs[1], '.4e'))+"x+"+str(format(tr_coeffs[0], '.4e')))
@@ -121,6 +123,8 @@ plt.plot(x, to_coeffs[3]*x**3+to_coeffs[2]*x**2+to_coeffs[1]*x+to_coeffs[0], 'r-
 plt.legend()
 plt.grid(True)
 plt.title("Torque v RPM")
+plt.xlabel("Time [s]")
+plt.ylabel("Torque (N m)")
 save_fig2(parent_directory, "torque_curve")
 print("Torque vs RPM:")
 print(str(format(to_coeffs[3], '.4e'))+"x^3+"+str(format(to_coeffs[2], '.4e'))+"x^2+"+str(format(to_coeffs[1], '.4e'))+"x+"+str(format(to_coeffs[0], '.4e')))
