@@ -3,7 +3,7 @@ calibration_curve.py
 
 Created by Colton Wright on 3/1/2023
 
-Point to the YYY-MM-DD_Calibration_Data directory and get the calibration curve
+Point to the YYYY-MM-DD_Calibration_Data directory and get the calibration curve
 """
 
 import numpy as np

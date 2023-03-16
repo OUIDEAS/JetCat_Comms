@@ -9,7 +9,7 @@ source /home/colton/Documents/GitHub/JetCat_Comms/.venv/bin/activate
 # change directory to the folder with the files
 cd "$1"
 
-/home/colton/Documents/GitHub/JetCat_Comms/.venv/bin/python /home/colton/Documents/GitHub/JetCat_Comms/src/calibration_curve.py "$1"
+/home/colton/Documents/GitHub/JetCat_Comms/.venv/bin/python /home/colton/Documents/GitHub/OUIDEAS/JetCat_Comms/calibration_curve.py "$1"
 # deactivate virtual environment
 deactivate
 
