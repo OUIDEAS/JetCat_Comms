@@ -19,115 +19,119 @@ def save_fig2(parent_directory, file_name, tight_layout=True,\
         plt.tight_layout()
     plt.savefig(path, format=fig_extension, dpi=resolution)
     print("Saving plots to ", path)
+
+
 # print("Input:", sys.argv[1])
 
-folder_path = r"C:\Users\colto\Documents\GitHub\JetCat_Comms\data\RC_Benchmark\Log_2023-03-16_160024\Log_2023-03-16_160024.csv" # Full path to file
+folder_path = "/home/colton/Documents/GitHub/OUIDEAS/JetCat_Comms/data/RC_Benchmark/2023-03-20/Log_2023-03-20_114941/Log_2023-03-20_114941.csv" # Full path to file
 parent_directory = os.path.dirname(folder_path)
 f1 = pd.read_csv(folder_path, delimiter=',', on_bad_lines='skip')
-
 f1 = f1.interpolate(method='linear')
-# print(f1)
 
-f1["dThrust"] = f1["Thrust (kgf)"].diff()
-f1["dThrust peaks"] = f1["dThrust"][f1["dThrust"] > 0.005]
-f1["dThrust valleys"] = f1["dThrust"][f1["dThrust"] < -0.005]
-f1.fillna(0, inplace=True)
-f1["dThrust spikes"] = f1["dThrust peaks"] + f1["dThrust valleys"]
-f1["dThrust spikes"] = abs(f1["dThrust spikes"])
-f1.fillna(0, inplace=True)
+start_time_motor = 2.8 # User input on what time the motor started spinning inside the original csv file
 
-# extrema_index = argrelextrema(f1["dThrust spikes"].values, np.greater, order=2)[0]
-# extrema_rows = f1.iloc[extrema_index]
-# # print(extrema_rows)
+start_index = (f1["Time (s)"] - start_time_motor).apply(abs).idxmin()
+f2 = f1[start_index:].copy()
+f2["Time (s)"] = f2["Time (s)"].sub(start_time_motor)
 
-f1.plot(x="Time (s)", y="Thrust (kgf)", grid=True)
-save_fig2(parent_directory, "Thrust")
-f1.plot(x="Time (s)", y="Torque (N·m)", grid=True)
-save_fig2(parent_directory, "Torque")
-# # f1.plot(x="Time (s)", y="dThrust")
-# # f1.plot(x ="Time (s)", y="dThrust peaks")
-# # f1.plot(x ="Time (s)", y="dThrust valleys")
-# # f1.plot(x ="Time (s)", y="dThrust spikes")
-f1.plot(x ="Time (s)", y="Motor Optical Speed (RPM)", grid=True)
+f2.plot(x ="Time (s)", y="Motor Optical Speed (RPM)", grid=True)
 save_fig2(parent_directory, "RPM")
+f2.plot(x="Time (s)", y="Torque (N·m)", grid=True)
+save_fig2(parent_directory, "Torque")
+f2.plot(x="Time (s)", y="Thrust (kgf)", grid=True)
+save_fig2(parent_directory, "Thrust")
 
-# # Get slices of dataframe for each step the motor is taking
+n_data_points = 35
+time_segment = np.arange(0, 82, 3) + 0.5
+time_segment_end = time_segment + 2
+rpm = np.zeros(len(time_segment))
+thrust = np.zeros(len(time_segment))
+torque = np.zeros(len(time_segment))
 
-slice_1 = f1.iloc[563:723]
-slice_2 = f1.iloc[803:964]
-slice_3 = f1.iloc[1024:1204]
-slice_4 = f1.iloc[1244:1443]
-slice_5 = f1.iloc[1484:1685]
-slice_6 = f1.iloc[1726:1927]
-slice_7 = f1.iloc[1967:2167]
-slice_8 = f1.iloc[2247:2407]
-slice_9 = f1.iloc[2447:2647]
-slice_10 = f1.iloc[2687:2887]
-slice_11 = f1.iloc[2927:3127]
-slice_12 = f1.iloc[3167:3367]
-slice_13 = f1.iloc[3407:3607]
-slice_14 = f1.iloc[3647:3847]
-slice_15 = f1.iloc[3887:4087]
-slice_16 = f1.iloc[4127:4327]
-slice_17 = f1.iloc[4367:4567]
-slice_18 = f1.iloc[4607:7967]
+for i in range(len(time_segment)):
 
-slices = [slice_1, slice_2, slice_3, slice_4, slice_5,
-          slice_6, slice_7, slice_8, slice_9, slice_10,
-          slice_11, slice_12, slice_13, slice_14, slice_15,
-          slice_16, slice_17, slice_18]
-rpm = np.zeros(len(slices))
-thrust = np.zeros(len(slices))
-torque = np.zeros(len(slices))
+    slice_start_index = (f2["Time (s)"] - (time_segment[i])).apply(abs).idxmin()
+    slice_stop_index = (f2["Time (s)"] - time_segment_end[i]).apply(abs).idxmin()
+    # print("Start: ", slice_start_index)
+    # print("Stop: ", slice_stop_index)
+    frame_slice = f2[slice_start_index:slice_stop_index]
+    rpm[i] = frame_slice["Motor Optical Speed (RPM)"].mean()
+    thrust[i] = frame_slice["Thrust (kgf)"].mean()
+    torque[i] = frame_slice["Torque (N·m)"].mean()
+    # frame_slice.plot(x ="Time (s)", y="Motor Optical Speed (RPM)", grid=True)
 
-for sl, i in zip(slices, range(len(slices))):
-    # sl.plot(x ="Time (s)", y="Motor Optical Speed (RPM)", grid=True)
-    rpm[i] = sl["Motor Optical Speed (RPM)"].mean()
-    thrust[i] = sl["Thrust (kgf)"].mean()
-    torque[i] = sl["Torque (N·m)"].mean()
+# Plot RPM to see if it's sliced okay...
+plt.figure()
+plt.plot(f2["Time (s)"], f2["Motor Optical Speed (RPM)"])
+plt.grid(True)
+plt.xlabel("Time (s)")
+plt.ylabel("Motor Optical Speed (RPM)")
+for time, time_end in zip(time_segment, time_segment_end):
+    plt.axvline(x=time, color='r')
+    plt.axvline(x=time_end, color='tab:orange')
+save_fig2(parent_directory, "Slices")
+
+
 
 n = 3
 rpmA = np.vander(rpm, n+1, increasing=True)
-tr_coeffs, tr_residuals, tr_rank, tr_s = lstsq(rpmA, thrust)
-to_coeffs, to_residuals, to_rank, to_s = lstsq(rpmA, torque)
-# print(tr_coeffs)
-# print(to_coeffs)
-# rpmA = np.vstack([rpm, np.ones(len(rpm))]).T
-# thrust_slope, thrust_constant = np.linalg.lstsq(rpmA, thrust, rcond=None)[0]
-# thrust_lstsq = np.linalg.lstsq(rpmA, thrust, rcond=None)
-# print(thrust_lstsq)
-# print(thrust_slope)
-# print(thrust_constant)
-# thrust_predict = thrust_slope*rpm+thrust_constant
+thrust_coeffs, thrust_residuals, thrust_rank, thrust_s = lstsq(rpmA, thrust)
+torque_coeffs, torque_residuals, torque_rank, torque_s = lstsq(rpmA, torque)
 
-# torque_slope, torque_constant = np.linalg.lstsq(rpmA, torque, rcond=None)[0]
-# torque_predict = torque_slope*rpm+torque_constant
+# print("Thrust curve:")
+# print(np.poly1d(np.flip(thrust_coeffs)))
+# print("Torque curve:")
+# print(np.poly1d(np.flip(torque_coeffs)))
 
+# print("Thrust residual:", thrust_residuals)
+# print("Torque residual:", torque_residuals)
 
 x = np.linspace(rpm[0], rpm[-1], 1000)
+
 plt.figure()
 plt.plot(rpm, thrust, 'bo', label='Data Points')
-plt.plot(x, tr_coeffs[3]*x**3+tr_coeffs[2]*x**2+tr_coeffs[1]*x+tr_coeffs[0], 'r-', label=("Fitted Line"))#+str(format(thrust_slope, '.4e'))+"x+"+str(format(thrust_constant, '.4e'))))
+plt.plot(x, thrust_coeffs[3]*x**3+thrust_coeffs[2]*x**2+thrust_coeffs[1]*x+thrust_coeffs[0], 'r-', label=("Fitted Line"))
 plt.legend()
 plt.grid(True)
 plt.title("Thrust v RPM")
-plt.xlabel("Time [s]")
+plt.xlabel("RPM")
 plt.ylabel("Thrust (kgf)")
 save_fig2(parent_directory, "thrust_curve")
-print("Thrust v RPM:")
-print(str(format(tr_coeffs[3], '.4e'))+"x^3+"+str(format(tr_coeffs[2], '.4e'))+"x^2+"+str(format(tr_coeffs[1], '.4e'))+"x+"+str(format(tr_coeffs[0], '.4e')))
 
 plt.figure()
 plt.plot(rpm, torque, 'bo', label='Data Points')
-plt.plot(x, to_coeffs[3]*x**3+to_coeffs[2]*x**2+to_coeffs[1]*x+to_coeffs[0], 'r-', label=("Fitted Line"))#+str(format(torque_slope, '.4e'))+"x+"+str(format(torque_slope, '.4e'))))
+plt.plot(x, torque_coeffs[3]*x**3+torque_coeffs[2]*x**2+torque_coeffs[1]*x+torque_coeffs[0], 'r-', label=("Fitted Line"))
 plt.legend()
 plt.grid(True)
 plt.title("Torque v RPM")
-plt.xlabel("Time [s]")
+plt.xlabel("RPM")
 plt.ylabel("Torque (N m)")
 save_fig2(parent_directory, "torque_curve")
-print("Torque vs RPM:")
-print(str(format(to_coeffs[3], '.4e'))+"x^3+"+str(format(to_coeffs[2], '.4e'))+"x^2+"+str(format(to_coeffs[1], '.4e'))+"x+"+str(format(to_coeffs[0], '.4e')))
+
+os.path.join(parent_directory, "README.txt")
+np.set_printoptions(precision=12)
+
+with open(os.path.join(parent_directory, "README.txt"), 'w') as f:
+    f.write("Thrust curve:\n\n")
+    f.write(str(np.poly1d(np.flip(thrust_coeffs))))
+    f.write("\n\n")
+    f.write("Torque curve:\n\n")
+    f.write(str(np.poly1d(np.flip(torque_coeffs))))
+    f.write("\n\n\n")
+
+    f.write("Thrust coefficients:\n")
+    f.write(str(np.flip(thrust_coeffs)))
+    f.write("\n")
+    f.write("Torque coefficients:\n")
+    f.write(str(np.flip(torque_coeffs)))
+    f.write("\n\n\n")
+
+    f.write("Thrust residual:\n")
+    f.write(str(thrust_residuals))
+    f.write("\n")
+    f.write("Torque residual:\n")
+    f.write(str(torque_residuals))
+    f.write("\n\n\n")
 
 
 plt.show()
