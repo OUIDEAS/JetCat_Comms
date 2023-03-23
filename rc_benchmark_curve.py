@@ -27,6 +27,8 @@ folder_path = "/home/colton/Documents/GitHub/OUIDEAS/JetCat_Comms/data/RC_Benchm
 parent_directory = os.path.dirname(folder_path)
 f1 = pd.read_csv(folder_path, delimiter=',', on_bad_lines='skip')
 f1 = f1.interpolate(method='linear')
+f1.plot(x ="Time (s)", y="Motor Optical Speed (RPM)", grid=True)
+save_fig2(parent_directory, "RPM_raw")
 
 start_time_motor = 2.8 # User input on what time the motor started spinning inside the original csv file
 
