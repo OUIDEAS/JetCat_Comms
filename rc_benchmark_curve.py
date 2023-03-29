@@ -21,17 +21,20 @@ def save_fig2(parent_directory, file_name, tight_layout=True,\
     print("Saving plots to ", path)
 
 
-# print("Input:", sys.argv[1])
+print("Input:", sys.argv[1])
 
-folder_path = "/home/colton/Documents/GitHub/OUIDEAS/JetCat_Comms/data/RC_Benchmark/2023-03-20/Log_2023-03-20_114941/Log_2023-03-20_114941.csv" # Full path to file
+folder_path = str(sys.argv[1])
+
+# folder_path = "/home/colton/Documents/GitHub/OUIDEAS/JetCat_Comms/data/RC_Benchmark/2023-03-20/Log_2023-03-20_114941/Log_2023-03-20_114941.csv" # Full path to file
 parent_directory = os.path.dirname(folder_path)
 f1 = pd.read_csv(folder_path, delimiter=',', on_bad_lines='skip')
 f1 = f1.interpolate(method='linear')
+f1.plot(x ="Time (s)", y="Motor Optical Speed (RPM)", grid=True)
+save_fig2(parent_directory, "RPM_raw")
 
-start_time_motor = 2.8 # User input on what time the motor started spinning inside the original csv file
-
-start_index = (f1["Time (s)"] - start_time_motor).apply(abs).idxmin()
-f2 = f1[start_index:].copy()
+first_nonzero_rpm_index = f1["Motor Optical Speed (RPM)"].ne(0).idxmax() + 3
+start_time_motor = f1["Time (s)"][first_nonzero_rpm_index]
+f2 = f1[first_nonzero_rpm_index:].copy()
 f2["Time (s)"] = f2["Time (s)"].sub(start_time_motor)
 
 f2.plot(x ="Time (s)", y="Motor Optical Speed (RPM)", grid=True)
