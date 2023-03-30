@@ -47,6 +47,8 @@ def main():
     plt.ylim(-.35, 0)
     plt.grid(True)
 
+    save_fig2(folder_path, "rpm_time")
+
     plt.show()
 
 
@@ -114,10 +116,18 @@ def get_rise_time(df, trigger_index, peak_thrust):
     # print(mask.loc[(index-5):(index+5)])
     return index
 
-
-
-
-
+def save_fig2(parent_directory, file_name, tight_layout=True,\
+    fig_extension="png", resolution=600):
+    """
+    Saves the figure inside a folder where the .csv file was found
+    """
+    IMAGES_PATH = os.path.join(parent_directory, "images")
+    os.makedirs(IMAGES_PATH, exist_ok=True)
+    path = os.path.join(IMAGES_PATH, file_name+"."+fig_extension)
+    if tight_layout:
+        plt.tight_layout()
+    plt.savefig(path, format=fig_extension, dpi=resolution)
+    print("Saving plots to ", path)
 
 if __name__ == '__main__':
     main()
