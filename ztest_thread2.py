@@ -26,14 +26,14 @@ queue1 = Queue(maxsize=0) # queue size is infinite
 # Create threads
 thread1_args = (queue1, data_filename, log_filename, True,)
 thread1 = threading.Thread(target=m3.read_port, args=thread1_args)
-test_thread = threading.Thread(target=m3.write_file_to_port, args=(bin_file_path,))
+# test_thread = threading.Thread(target=m3.write_file_to_port, args=(bin_file_path,))
 csv_thread = threading.Thread(target=m3.csv_thread_func, args=(queue1, csv_filename,))
 
 
 
 thread1.start()
 time.sleep(.1)
-test_thread.start() # For simulating a PRO-Interface on the serial port
+# test_thread.start() # For simulating a PRO-Interface on the serial port
 csv_thread.start()
 
 # CSV is being written to, let's plot...
