@@ -23,7 +23,7 @@ def collect_samples():
     sample_times = np.linspace(0,n_samples/sampling_rate,n_samples)
     with nidaqmx.Task() as task:
 
-        task.ai_channels.add_ai_voltage_chan("Dev1/ai0")
+        task.ai_channels.add_ai_voltage_chan("Dev1/ai1")
         task.timing.cfg_samp_clk_timing(sampling_rate, sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS)
 
         n_samples_per_loop = 5000 # You cannot just shove 100k samples into a list
@@ -69,11 +69,9 @@ def prompt_weight(input_string):
     return is_ready
 
 
-def save_frame(frame):
+def save_frame(frame, weight, now):
+    parent_directory = "."
     csv_path = os.path.join(parent_directory, "data", now)
-    os.makedirs(IMAGES_PATH, exist_ok=True)
-    path = os.path.join(IMAGES_PATH, file_name+"."+fig_extension)
-    if tight_layout:
-        plt.tight_layout()
-    plt.savefig(path, format=fig_extension, dpi=resolution)
-    print("Saving plots to ", path)
+    os.makedirs(csv_path, exist_ok=True)
+    path = os.path.join(csv_path, weight)
+    frame.to_csv(path, index=False)

@@ -27,8 +27,7 @@ values = {"40aF": 40.001,
           "40bR": -39.999,
           "35aR": -35.001
           }
-now = datetime.datetime.today()
-now = now.strftime("%Y-%m-%d")
+now_more = datetime.datetime.today().strftime("%Y-%m-%dT%H%M%S")
 weight_order = ("40aF", "40aR", "40aR_40bF", "40bF_35aF", "40bF")
 frames = []
 for i in range(len(weight_order)):
@@ -36,7 +35,7 @@ for i in range(len(weight_order)):
     if is_ready == 'y':
         print("Collecting samples...")
         frames.append(m2.collect_samples())
-        m2.save_frame(frames[i])
+        m2.save_frame(frames[i], weight_order[i], now_more)
     else:
         break
     print(i)
