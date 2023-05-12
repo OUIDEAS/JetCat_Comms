@@ -6,3 +6,4 @@ pyserial
 cffi
 nptdms
 nidaqmx
+crc 
