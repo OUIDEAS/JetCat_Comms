@@ -4,4 +4,5 @@ scipy
 pandas
 pyserial
 cffi
+nptdms
 nidaqmx

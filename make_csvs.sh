@@ -7,18 +7,17 @@ start=$(date +%s.%N)
 source ./.venv/bin/activate
 
 # change directory to the folder with the files
-cd "$1"
+# cd "$1"
 
 # iterate over all .bin files in the folder and its subdirectories
-find . -type f -name "*.bin" | while read file; do
+find "$1" -type f -name "*.bin" | while read file; do
   # run the Python script with the .bin file as the argument
   echo "Processing file: $file"
   ./.venv/bin/python ./bin_to_csv.py "$file"
 done
 
-cd "$1"
 # iterate over all .tdms files in the folder and its subdirectories
-find . -type f -name "*.tdms" | while read file; do
+find "$1" -type f -name "*.tdms" | while read file; do
   # run the Python script with the .tdms file as the argument
   echo "Processing file: $file"
   ./.venv/bin/python ./tdms_to_csv.py "$file"
