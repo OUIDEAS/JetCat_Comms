@@ -4,7 +4,7 @@
 start=$(date +%s.%N)
 
 # activate virtual environment
-source /home/colton/Documents/GitHub/JetCat_Comms/.venv/bin/activate
+source ./.venv/bin/activate
 
 # change directory to the folder with the files
 cd "$1"
@@ -13,7 +13,7 @@ cd "$1"
 find . -type f -name "*.bin" | while read file; do
   # run the Python script with the .bin file as the argument
   echo "Processing file: $file"
-  /home/colton/Documents/GitHub/JetCat_Comms/.venv/bin/python /home/colton/Documents/GitHub/JetCat_Comms/src/bin_to_csv.py "$file"
+  ./.venv/bin/python ./bin_to_csv.py "$file"
 done
 
 cd "$1"
@@ -21,7 +21,7 @@ cd "$1"
 find . -type f -name "*.tdms" | while read file; do
   # run the Python script with the .tdms file as the argument
   echo "Processing file: $file"
-  /home/colton/Documents/GitHub/JetCat_Comms/.venv/bin/python /home/colton/Documents/GitHub/JetCat_Comms/src/tdms_to_csv.py "$file"
+  ./.venv/bin/python ./tdms_to_csv.py "$file"
 done
 
 # deactivate virtual environment

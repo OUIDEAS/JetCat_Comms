@@ -21,7 +21,7 @@ import datetime
 import cffi
 import csv
 import struct
-from _crc.lib import get_crc16z
+# from _crc.lib import get_crc16z
 
 
 COM_PORT = 'COM3'
@@ -241,23 +241,23 @@ def decode_line(byte_array):
 
 def start_countdown():
     print("STARTING ENGINE IN 10...")
-    time.sleep(1)
+    # time.sleep(1)
     print("STARTING ENGINE IN 9...")
-    time.sleep(1)
+    # time.sleep(1)
     print("STARTING ENGINE IN 8...")
-    time.sleep(1)
+    # time.sleep(1)
     print("STARTING ENGINE IN 7...")
-    time.sleep(1)
+    # time.sleep(1)
     print("STARTING ENGINE IN 6...")
-    time.sleep(1)
+    # time.sleep(1)
     print("STARTING ENGINE IN 5...")
-    time.sleep(1)
+    # time.sleep(1)
     print("STARTING ENGINE IN 4...")
-    time.sleep(1)
+    # time.sleep(1)
     print("STARTING ENGINE IN 3...")
-    time.sleep(1)
+    # time.sleep(1)
     print("STARTING ENGINE IN 2...")
-    time.sleep(1)
+    # time.sleep(1)
     print("STARTING ENGINE IN 1...")
     time.sleep(1)
     print("STARTING ENGINE!")
@@ -383,26 +383,80 @@ def send_throttle_rpm(ser, log_file, throttle_rpm, sequence_no):
     header_basic = b'\x01\x01\x02' + sequence_no_bytes + b'\x02' + rpm_bytes
 
     # Calculate the crc16 from the basic header
-    header_basic_c = ffibuilder.new("char[]", header_basic)
-    crc16_calc = get_crc16z(header_basic_c, len(header_basic_c)-1)
+    # header_basic_c = ffibuilder.new("char[]", header_basic)
+    # crc16_calc = get_crc16z(header_basic_c, len(header_basic_c)-1)
+    crc16_calc = get_crc16z(header_basic,  len(header_basic)-1)
+    print(crc16_calc)
     crc16_bytes = crc16_calc.to_bytes(2, 'big')
 
     # Append the crc16 bytes to the end of the basic header
     header_unstuffed = header_basic + crc16_bytes
 
-    print_and_log(log_file, ("RPM to send:" + str(rpm_bytes)))
-    print_and_log(log_file, ("CRC16 decimal:" + str(crc16_calc)))
-    print_and_log(log_file, ("CRC16 hex:" + str(crc16_bytes)))
+    log_file.write("RPM to send: " + str(rpm_bytes) +"\n")
+    log_file.write("CRC16 decimal: " + str(crc16_calc) +"\n")
+    log_file.write("CRC16 hex: " + str(crc16_bytes) +"\n")
+
     # Need to stuff the header data in case there are any 0x7E or 0x7D bytes
     header_stuffed = stuff_header(header_unstuffed)
     header_send = b'\x7E' + header_stuffed + b'\x7E'
 
 
     print("Full header_send:", header_send)
+    log_file.write("Full header send:" +str(header_send)+"\n")
     ser.write(header_send)
 
 def stop_engine(ser):
     ser.write(b"\x7E\x01\x01\x01\x01\x02\x00\x00\x39\xB9\x7E")
+
+
+def crc16_update(crc, data):
+    ret_val = 0
+    data ^= crc & 0xFF
+    data ^= data << 4
+    ret_val = ((((data << 8) | ((crc & 0xFF00) >> 8)) ^ (data >> 4)) ^ (data << 3))
+    return ret_val
+
+def get_crc16z(data, length):
+    crc16_data = 0
+    print("data: ", data, type(data), len(data))
+    print("crc16_data: ",crc16_data, type(crc16_data))
+    for byte in data:
+        print(byte, type(byte))
+        crc16_data = crc16_update(crc16_data, byte)
+        print("crc16_data: ",crc16_data, type(crc16_data))
+    return crc16_data
+
+def stuff_header(header_bytes):
+    # Take a header and stuff to fix any 0x7D and 0x7E problems.
+    # Using a while loop so that we can update the length of the byte array,
+    # that way when the array grows we still index clear to the end of it.
+
+
+    byte_array1 = bytearray(header_bytes)
+    i = 0
+    while i < len(byte_array1):
+
+        # You have to check for 7D first. If you don't, it will replace the
+        # 0x7D inserted from 0x7E check and break your program!
+        if byte_array1[i] == 0x7D:
+            # Need to stuff 0x7D 0x5D in its place
+            del byte_array1[i]
+            insert_this = bytearray(b'\x7D\x5D')
+            byte_array1[i:i] = insert_this
+            print("Stuffed the 7D:", byte_array1)
+
+        if byte_array1[i] == 0x7E:
+            # Need to stuff 0x7D 0x5E in its place
+            del byte_array1[i]
+            insert_this = bytearray(b'\x7D\x5E')
+            byte_array1[i:i] = insert_this
+            print("Stuffed the 7E:", byte_array1)
+
+        i = i + 1
+
+
+    stuffed_header = bytes(byte_array1)
+    return(stuffed_header)
 
 if __name__ == '__main__':
     main()
