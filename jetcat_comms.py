@@ -21,6 +21,7 @@ import datetime
 import cffi
 import csv
 import struct
+import crc
 # from _crc.lib import get_crc16z
 
 
@@ -69,10 +70,55 @@ def main():
     else:
         print("Not starting engine...")
 
+def crc16_testing1():
+    pass
+    PATH = r"C:\Users\Colton W\OneDrive - Ohio University\Research\JetCat\data_processed\2023-02-22_JetCat_Test\interface\2023-02-22_T114204_data.bin"
+    with open(PATH, 'br') as old_file:
+        old_data = old_file.read()
+        # print(old_data)
+    packets = old_data.split(b"\x7E\x7E")
+    packet3 = packets[5]
+    # Unstuff the data packet for processing
+    data_packet = packets[4]
+    print(data_packet)
+    data_packet = bytearray(data_packet)
+
+    # CRC16 calculation:
+    datastring = bytes(data_packet)
+    datastring_no_crc = datastring[:-2]
+    print(datastring_no_crc)
+    # TODO: CRC Checksum
+    # data = ffibuilder.new("char[]", datastring)
+    crc16_calc = get_crc16z(datastring,  len(datastring)-1)
+    print(crc16_calc)
+    print("Using crc module...\n\n")
+    config = crc.Configuration(
+        width=16,
+        polynomial=0x1021,
+        init_value=0x00,
+        final_xor_value=0x00,
+        reverse_input=True,
+        reverse_output=True,
+    )
+    crc_calculator = crc.Calculator(crc.Crc16.CCITT)
+    crc_calculator2 = crc.Calculator(config)
+    print(crc_calculator.checksum(datastring_no_crc))
+    print(crc_calculator2.checksum(datastring_no_crc))
 
 
 
+    crc16_bytes = crc16_calc.to_bytes(2, 'big')
+    # Unstuff the data packet for processing
+    unstuffed_line = byte_unstuffing(data_packet)
+    print(unstuffed_line)
 
+    if len(unstuffed_line) == 33:
+        processed_packet = decode_line(unstuffed_line)
+        processed_packet.append(crc16_calc)
+        processed_packet.insert(0, time.time()-START_TIME) # Put a timestamp at [0]
+        print(processed_packet, end='')
+        # csv_writer.writerow(processed_packet)
+        # queue2.put(processed_packet)
 
 
 
@@ -152,14 +198,15 @@ def packet_to_csv(queue2, data_packet, csv_writer, START_TIME):
     datastring = bytes(data_packet)
     # TODO: CRC Checksum
     # data = ffibuilder.new("char[]", datastring)
-    # crc16_calculation = get_crc16z(data, len(datastring)-2)
-
+    crc16_calc = get_crc16z(datastring,  len(datastring)-1)
+    print(crc16_calc)
+    crc16_bytes = crc16_calc.to_bytes(2, 'big')
     # Unstuff the data packet for processing
     unstuffed_line = byte_unstuffing(data_packet)
 
     if len(unstuffed_line) == 33:
         processed_packet = decode_line(unstuffed_line)
-        # processed_packet.append(crc16_calculation)
+        processed_packet.append(crc16_calc)
         processed_packet.insert(0, time.time()-START_TIME) # Put a timestamp at [0]
         # print(processed_packet, end='')
         csv_writer.writerow(processed_packet)
@@ -413,17 +460,17 @@ def crc16_update(crc, data):
     ret_val = 0
     data ^= crc & 0xFF
     data ^= data << 4
-    ret_val = ((((data << 8) | ((crc & 0xFF00) >> 8)) ^ (data >> 4)) ^ (data << 3))
+    ret_val = ((((data << 8) | ((crc & 0xFF00) >> 8)) ^ (data >> 4)) ^ (data << 3)) & 0xFFFF
     return ret_val
 
 def get_crc16z(data, length):
     crc16_data = 0
-    print("data: ", data, type(data), len(data))
-    print("crc16_data: ",crc16_data, type(crc16_data))
+    # print("data: ", data, type(data), len(data))
+    # print("crc16_data: ",crc16_data, type(crc16_data))
     for byte in data:
-        print(byte, type(byte))
+        # print(byte, type(byte))
         crc16_data = crc16_update(crc16_data, byte)
-        print("crc16_data: ",crc16_data, type(crc16_data))
+        # print("crc16_data: ",crc16_data, type(crc16_data))
     return crc16_data
 
 def stuff_header(header_bytes):
@@ -459,5 +506,6 @@ def stuff_header(header_bytes):
     return(stuffed_header)
 
 if __name__ == '__main__':
+    crc16_testing1()
     main()
     print("Runtime:", time.time()-START_TIME)
