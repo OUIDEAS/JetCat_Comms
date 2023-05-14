@@ -72,14 +72,13 @@ def main():
 
 def crc16_testing1():
     pass
-    PATH = r"C:\Users\Colton W\OneDrive - Ohio University\Research\JetCat\data_processed\2023-02-22_JetCat_Test\interface\2023-02-22_T114204_data.bin"
+    PATH = r"C:\Users\colto\OneDrive - Ohio University\Research\JetCat\data_processed\2023-02-22_JetCat_Test\interface\2023-02-22_T114204_data.bin"
     with open(PATH, 'br') as old_file:
         old_data = old_file.read()
         # print(old_data)
     packets = old_data.split(b"\x7E\x7E")
-    packet3 = packets[5]
     # Unstuff the data packet for processing
-    data_packet = packets[4]
+    data_packet = packets[50]
     print(data_packet)
     data_packet = bytearray(data_packet)
 
@@ -87,11 +86,7 @@ def crc16_testing1():
     datastring = bytes(data_packet)
     datastring_no_crc = datastring[:-2]
     print(datastring_no_crc)
-    # TODO: CRC Checksum
-    # data = ffibuilder.new("char[]", datastring)
-    crc16_calc = get_crc16z(datastring,  len(datastring)-1)
-    print(crc16_calc)
-    print("Using crc module...\n\n")
+    print("Using crc module...")
     config = crc.Configuration(
         width=16,
         polynomial=0x1021,
@@ -100,21 +95,19 @@ def crc16_testing1():
         reverse_input=True,
         reverse_output=True,
     )
-    crc_calculator = crc.Calculator(crc.Crc16.CCITT)
     crc_calculator2 = crc.Calculator(config)
-    print(crc_calculator.checksum(datastring_no_crc))
     print(crc_calculator2.checksum(datastring_no_crc))
 
 
 
-    crc16_bytes = crc16_calc.to_bytes(2, 'big')
+    crc16_bytes = crc_calculator2.checksum(datastring_no_crc).to_bytes(2, 'big')
     # Unstuff the data packet for processing
     unstuffed_line = byte_unstuffing(data_packet)
     print(unstuffed_line)
 
     if len(unstuffed_line) == 33:
         processed_packet = decode_line(unstuffed_line)
-        processed_packet.append(crc16_calc)
+        processed_packet.append(crc_calculator2.checksum(datastring_no_crc))
         processed_packet.insert(0, time.time()-START_TIME) # Put a timestamp at [0]
         print(processed_packet, end='')
         # csv_writer.writerow(processed_packet)
@@ -172,6 +165,15 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
 # csv processing
 def csv_thread_func(queue1, queue2, csv_filename, START_TIME, TEST_DURATION):
     # Open csv for writing packets:
+    config = crc.Configuration(
+        width=16,
+        polynomial=0x1021,
+        init_value=0x00,
+        final_xor_value=0x00,
+        reverse_input=True,
+        reverse_output=True,
+    )
+    crc_calculator2 = crc.Calculator(config)
     with open(csv_filename, 'w', newline='') as csv_file:
         cw_writer = csv.writer(csv_file, delimiter=',')
         cw_writer.writerow(["Time", "Engine_Address", "Message_Descriptor",
@@ -188,7 +190,7 @@ def csv_thread_func(queue1, queue2, csv_filename, START_TIME, TEST_DURATION):
                 break
 
 
-def packet_to_csv(queue2, data_packet, csv_writer, START_TIME):
+def packet_to_csv(queue2, data_packet, csv_writer, START_TIME, crc_calc):
     # print(data_packet)
     data_packet = data_packet[:-2] # Clip off the framing bytes
     # print(data_packet)
@@ -196,11 +198,12 @@ def packet_to_csv(queue2, data_packet, csv_writer, START_TIME):
 
     # CRC16 calculation:
     datastring = bytes(data_packet)
+    datastring_no_crc = datastring[:-2] # Clip off crc number for the crc checksum
     # TODO: CRC Checksum
     # data = ffibuilder.new("char[]", datastring)
-    crc16_calc = get_crc16z(datastring,  len(datastring)-1)
+    crc16_calc = crc_calc.checksum(datastring)
     print(crc16_calc)
-    crc16_bytes = crc16_calc.to_bytes(2, 'big')
+    # crc16_bytes = crc16_calc.to_bytes(2, 'big')
     # Unstuff the data packet for processing
     unstuffed_line = byte_unstuffing(data_packet)
 
@@ -211,9 +214,6 @@ def packet_to_csv(queue2, data_packet, csv_writer, START_TIME):
         # print(processed_packet, end='')
         csv_writer.writerow(processed_packet)
         queue2.put(processed_packet)
-        # print(processed_packet)
-
-        # return processed_packet
 
 
 def byte_unstuffing(byte_array):
