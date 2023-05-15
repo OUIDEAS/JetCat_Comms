@@ -4,6 +4,7 @@ images/
 documentation/
 anims/
 throttle_curves/
+*.csv
 
 # Python & C .gitignore put together
 _crc.c
