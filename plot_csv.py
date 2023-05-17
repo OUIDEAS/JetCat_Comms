@@ -11,9 +11,23 @@ import sys
 import os
 import matplotlib.pyplot as plt
 
-import modules.data_analysis_m1 as m1
+def save_fig2(parent_directory, file_name, tight_layout=True,\
+    fig_extension="png", resolution=600):
+    """
+    Saves the figure inside a folder where the .csv file was found
+    """
+    IMAGES_PATH = os.path.join(parent_directory, "images")
+    os.makedirs(IMAGES_PATH, exist_ok=True)
+    path = os.path.join(IMAGES_PATH, file_name+"."+fig_extension)
+    if tight_layout:
+        plt.tight_layout()
+    plt.savefig(path, format=fig_extension, dpi=resolution)
+    print("Saving plots to ", path)
+
+
 
 file_path = sys.argv[1] # Full path to file
+
 
 frame = pd.read_csv(file_path)
 base_path, extension = os.path.splitext(file_path)
@@ -32,7 +46,7 @@ if frame.columns[0] == "Engine_Address":
         else:
             frame.plot(y=col, use_index=True, style='b-')
             plt.grid(True)
-        m1.save_fig2(base_path, col) # Want the name of data file in folder
+        save_fig2(base_path, col) # Want the name of data file in folder
         plt.close('all')
 
 elif frame.columns[1] == "Voltage":
@@ -40,6 +54,19 @@ elif frame.columns[1] == "Voltage":
     plt.figure()
     frame.plot(x="Time [s]", y="Voltage", style='b-')
     plt.grid(True)
-    m1.save_fig2(parent_directory, frame.columns[1])
+    save_fig2(parent_directory, frame.columns[1])
     plt.close('all')
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -4,7 +4,7 @@
 start=$(date +%s.%N)
 
 # activate virtual environment
-source /home/colton/Documents/GitHub/JetCat_Comms/.venv/bin/activate
+. /home/colton/Documents/GitHub/JetCat_Comms/.venv/bin/activate
 
 # change directory to the folder with the files
 cd "$1"

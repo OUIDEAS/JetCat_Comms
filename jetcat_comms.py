@@ -30,7 +30,7 @@ START_TIME = time.time()
 
 def main():
 
-    TEST_DURATION = 30
+    TEST_DURATION = 120
 
     data_filename, log_filename, csv_filename = make_filenames()
     queue1 = Queue(maxsize=0) # queue size is infinite
@@ -133,6 +133,7 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
     open(log_file_path, 'a') as log_file:
         start_engine(ser)
 
+        cmd_counter = 0
         while True:
             data_packet = ser.read_until(b'\x7E\x7E')
             dat_file.write(data_packet)
@@ -140,8 +141,6 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
             now = time.time()
 
 
-
-            cmd_counter = 0
             # If enough time has elapsed, send a throttle command
             if now > (START_TIME + cmd_array[cmd_counter, 0]):
 
@@ -185,7 +184,7 @@ def csv_thread_func(queue1, queue2, csv_filename, START_TIME, TEST_DURATION):
         while True:
             # Process the queue. Pull, process, timestamp, save to csv, animate.
             data_packet = queue1.get()
-            packet_to_csv(queue2, data_packet, cw_writer, START_TIME)
+            packet_to_csv(queue2, data_packet, cw_writer, START_TIME, crc_calculator2)
             if time.time() > START_TIME + TEST_DURATION:
                 break
 
@@ -200,8 +199,7 @@ def packet_to_csv(queue2, data_packet, csv_writer, START_TIME, crc_calc):
     datastring = bytes(data_packet)
     datastring_no_crc = datastring[:-2] # Clip off crc number for the crc checksum
     # TODO: CRC Checksum
-    # data = ffibuilder.new("char[]", datastring)
-    crc16_calc = crc_calc.checksum(datastring)
+    crc16_calc = crc_calc.checksum(datastring_no_crc)
     print(crc16_calc)
     # crc16_bytes = crc16_calc.to_bytes(2, 'big')
     # Unstuff the data packet for processing
@@ -506,6 +504,6 @@ def stuff_header(header_bytes):
     return(stuffed_header)
 
 if __name__ == '__main__':
-    crc16_testing1()
+    # crc16_testing1()
     main()
     print("Runtime:", time.time()-START_TIME)

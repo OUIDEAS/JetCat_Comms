@@ -1,21 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
 # Start timer
 start=$(date +%s.%N)
-
 # activate virtual environment
-source /home/colton/Documents/GitHub/JetCat_Comms/.venv/bin/activate
+source ./.venv/Scripts/activate
 
 # change directory to the folder with the files
-cd "$1"
+# cd "$1"
 
 # iterate over all .bin files in the folder and its subdirectories
-find . -type f -name "*.csv" | while read file; do
+find "$1" -type f -name "*.csv" | while read file; do
   # run the Python script with the .bin file as the argument
   echo "Processing file: $file"
-  /home/colton/Documents/GitHub/JetCat_Comms/.venv/bin/python /home/colton/Documents/GitHub/JetCat_Comms/src/plot_csv.py "$file"
+  ./.venv/Scripts/python ./plot_csv.py "$file"
 done
-
 
 # deactivate virtual environment
 deactivate
