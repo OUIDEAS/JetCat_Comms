@@ -30,7 +30,7 @@ START_TIME = time.time()
 
 def main():
 
-    TEST_DURATION = 120
+    TEST_DURATION = 60*120 # [s]
 
     data_filename, log_filename, csv_filename = make_filenames()
     queue1 = Queue(maxsize=0) # queue size is infinite
@@ -200,7 +200,7 @@ def packet_to_csv(queue2, data_packet, csv_writer, START_TIME, crc_calc):
     datastring_no_crc = datastring[:-2] # Clip off crc number for the crc checksum
     # TODO: CRC Checksum
     crc16_calc = crc_calc.checksum(datastring_no_crc)
-    print(crc16_calc)
+    # print(crc16_calc)
     # crc16_bytes = crc16_calc.to_bytes(2, 'big')
     # Unstuff the data packet for processing
     unstuffed_line = byte_unstuffing(data_packet)
