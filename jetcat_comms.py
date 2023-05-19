@@ -32,6 +32,15 @@ def main():
     data_filename, log_filename, csv_filename = make_filenames()
     queue1 = Queue(maxsize=0) # queue size is infinite
     queue2 = Queue(maxsize=0) # queue size is infinite
+    config = crc.Configuration(
+        width=16,
+        polynomial=0x1021,
+        init_value=0x00,
+        final_xor_value=0x00,
+        reverse_input=True,
+        reverse_output=True,
+    )
+    crc_calculator = crc.Calculator(config)
 
     cmd_file_path = sys.argv[1]
 
@@ -43,9 +52,9 @@ def main():
         START_TIME = time.time()
 
         # Create threads
-        thread1_args = (queue1, data_filename, log_filename, START_TIME, TEST_DURATION, cmd_array,)
+        thread1_args = (queue1, data_filename, log_filename, START_TIME, TEST_DURATION, cmd_array,crc_calculator,)
         thread1 = threading.Thread(target=interface_port_thread_func, args=thread1_args)
-        thread2_args = (queue1, queue2, csv_filename, START_TIME, TEST_DURATION,)
+        thread2_args = (queue1, queue2, csv_filename, START_TIME, TEST_DURATION, crc_calculator,)
         thread2 = threading.Thread(target=csv_thread_func, args=thread2_args)
 
         thread1.start()
@@ -119,7 +128,7 @@ def crc16_testing1():
 
 
 
-def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME, TEST_DURATION, cmd_array):
+def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME, TEST_DURATION, cmd_array, crc_calculator):
     """
     Read the serial port of the PRO-Interface and save to a bin file. Push the
     data packets into the queue so that it can be processed in real time.
@@ -142,7 +151,7 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
             # If enough time has elapsed, send a throttle command
             if now > (START_TIME + cmd_array[cmd_counter, 0]):
 
-                send_throttle_rpm(ser, log_file, cmd_array[cmd_counter, 1], cmd_counter)
+                send_throttle_rpm(ser, log_file, cmd_array[cmd_counter, 1], cmd_counter, crc_calculator)
                 log_file.write(("Sent cmd at:" + str(now)) + "\n")
                 log_file.write(("Time:" + str(cmd_array[cmd_counter, 0])) + "\n")
                 log_file.write(("Throttle_RPM:" + str(cmd_array[cmd_counter, 1])) + "\n")
@@ -160,17 +169,8 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
 
 
 # csv processing
-def csv_thread_func(queue1, queue2, csv_filename, START_TIME, TEST_DURATION):
+def csv_thread_func(queue1, queue2, csv_filename, START_TIME, TEST_DURATION, crc_calculator):
     # Open csv for writing packets:
-    config = crc.Configuration(
-        width=16,
-        polynomial=0x1021,
-        init_value=0x00,
-        final_xor_value=0x00,
-        reverse_input=True,
-        reverse_output=True,
-    )
-    crc_calculator2 = crc.Calculator(config)
     with open(csv_filename, 'w', newline='') as csv_file:
         cw_writer = csv.writer(csv_file, delimiter=',')
         cw_writer.writerow(["Time", "Engine_Address", "Message_Descriptor",
@@ -182,7 +182,7 @@ def csv_thread_func(queue1, queue2, csv_filename, START_TIME, TEST_DURATION):
         while True:
             # Process the queue. Pull, process, timestamp, save to csv, animate.
             data_packet = queue1.get()
-            packet_to_csv(queue2, data_packet, cw_writer, START_TIME, crc_calculator2)
+            packet_to_csv(queue2, data_packet, cw_writer, START_TIME, crc_calculator)
             if time.time() > START_TIME + TEST_DURATION:
                 break
 
@@ -402,7 +402,7 @@ def modify_value(value):
     return value
 
 
-def send_throttle_rpm(ser, log_file, throttle_rpm, sequence_no):
+def send_throttle_rpm(ser, log_file, throttle_rpm, sequence_no, crc_calculator):
     # Send the P300-PRO any throttle command.
 
     # Jetcat documentation:
@@ -430,10 +430,8 @@ def send_throttle_rpm(ser, log_file, throttle_rpm, sequence_no):
     header_basic = b'\x01\x01\x02' + sequence_no_bytes + b'\x02' + rpm_bytes
 
     # Calculate the crc16 from the basic header
-    # header_basic_c = ffibuilder.new("char[]", header_basic)
-    # crc16_calc = get_crc16z(header_basic_c, len(header_basic_c)-1)
-    crc16_calc = get_crc16z(header_basic,  len(header_basic)-1)
-    print(crc16_calc)
+    crc16_calc = crc_calculator.checksum(header_basic)
+    print("CRC of engine RPM bytes: ", crc16_calc)
     crc16_bytes = crc16_calc.to_bytes(2, 'big')
 
     # Append the crc16 bytes to the end of the basic header
@@ -455,23 +453,6 @@ def send_throttle_rpm(ser, log_file, throttle_rpm, sequence_no):
 def stop_engine(ser):
     ser.write(b"\x7E\x01\x01\x01\x01\x02\x00\x00\x39\xB9\x7E")
 
-
-def crc16_update(crc, data):
-    ret_val = 0
-    data ^= crc & 0xFF
-    data ^= data << 4
-    ret_val = ((((data << 8) | ((crc & 0xFF00) >> 8)) ^ (data >> 4)) ^ (data << 3)) & 0xFFFF
-    return ret_val
-
-def get_crc16z(data, length):
-    crc16_data = 0
-    # print("data: ", data, type(data), len(data))
-    # print("crc16_data: ",crc16_data, type(crc16_data))
-    for byte in data:
-        # print(byte, type(byte))
-        crc16_data = crc16_update(crc16_data, byte)
-        # print("crc16_data: ",crc16_data, type(crc16_data))
-    return crc16_data
 
 def stuff_header(header_bytes):
     # Take a header and stuff to fix any 0x7D and 0x7E problems.
