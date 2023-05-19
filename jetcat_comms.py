@@ -36,7 +36,7 @@ def main():
     queue1 = Queue(maxsize=0) # queue size is infinite
     queue2 = Queue(maxsize=0) # queue size is infinite
 
-    cmd_array = read_throttle_rpm_cmds("curve1.txt")
+    cmd_array = read_throttle_rpm_cmds("curve2_evaltest.txt")
     TEST_DURATION = cmd_array[-1, 0]
     start_input = input("Are you ready to start the engine? [y/n]: ")
     if start_input.lower() == "y":
@@ -394,7 +394,7 @@ def modify_value(value):
             value = round(value)
             value = str(value)
             
-        if "+" in value:
+        else:
             value = eval(value)
 
     return value
