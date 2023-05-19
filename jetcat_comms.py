@@ -18,19 +18,15 @@ import os
 import sys
 import time
 import datetime
-import cffi
 import csv
 import struct
 import crc
-# from _crc.lib import get_crc16z
 
 
 COM_PORT = 'COM3'
 START_TIME = time.time()
 
 def main():
-
-    TEST_DURATION = 60*120 # [s]
 
     data_filename, log_filename, csv_filename = make_filenames()
     queue1 = Queue(maxsize=0) # queue size is infinite
@@ -286,23 +282,23 @@ def decode_line(byte_array):
 
 def start_countdown():
     print("STARTING ENGINE IN 10...")
-    # time.sleep(1)
+    time.sleep(1)
     print("STARTING ENGINE IN 9...")
-    # time.sleep(1)
+    time.sleep(1)
     print("STARTING ENGINE IN 8...")
-    # time.sleep(1)
+    time.sleep(1)
     print("STARTING ENGINE IN 7...")
-    # time.sleep(1)
+    time.sleep(1)
     print("STARTING ENGINE IN 6...")
-    # time.sleep(1)
+    time.sleep(1)
     print("STARTING ENGINE IN 5...")
-    # time.sleep(1)
+    time.sleep(1)
     print("STARTING ENGINE IN 4...")
-    # time.sleep(1)
+    time.sleep(1)
     print("STARTING ENGINE IN 3...")
-    # time.sleep(1)
+    time.sleep(1)
     print("STARTING ENGINE IN 2...")
-    # time.sleep(1)
+    time.sleep(1)
     print("STARTING ENGINE IN 1...")
     time.sleep(1)
     print("STARTING ENGINE!")
