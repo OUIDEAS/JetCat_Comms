@@ -23,6 +23,7 @@ import struct
 import crc
 
 
+
 COM_PORT = 'COM3'
 START_TIME = time.time()
 
@@ -32,7 +33,9 @@ def main():
     queue1 = Queue(maxsize=0) # queue size is infinite
     queue2 = Queue(maxsize=0) # queue size is infinite
 
-    cmd_array = read_throttle_rpm_cmds("curve2_evaltest.txt")
+    cmd_file_path = sys.argv[1]
+
+    cmd_array = read_throttle_rpm_cmds(cmd_file_path)
     TEST_DURATION = cmd_array[-1, 0]
     start_input = input("Are you ready to start the engine? [y/n]: ")
     if start_input.lower() == "y":
@@ -62,7 +65,6 @@ def main():
         ani = animation.FuncAnimation(fig, update_anim, fargs=ani_args, interval = 100, blit=False, save_count=10)
         fig.tight_layout()
         plt.show()
-        print("Hello")
     else:
         print("Not starting engine...")
 
@@ -205,9 +207,13 @@ def packet_to_csv(queue2, data_packet, csv_writer, START_TIME, crc_calc):
         processed_packet = decode_line(unstuffed_line)
         processed_packet.append(crc16_calc)
         processed_packet.insert(0, time.time()-START_TIME) # Put a timestamp at [0]
-        # print(processed_packet, end='')
-        csv_writer.writerow(processed_packet)
-        queue2.put(processed_packet)
+
+        # Check if crc16's match, it is corrupt if not
+        if processed_packet[-1] == processed_packet[-2]:
+            csv_writer.writerow(processed_packet)
+            queue2.put(processed_packet)
+        else:
+            print("crc16's are not equal at "+str(time.time()))
 
 
 def byte_unstuffing(byte_array):
