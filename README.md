@@ -6,7 +6,7 @@ Created Repo on 11/11/2022
 
     sudo apt-get install python-dev libxml2-dev libxslt-dev
 
-Ubuntu also required dev tools for c to be installed for FCCI to work. Run
+Ubuntu also required dev tools for c to be installed for CFFI to work. Run
 
     sudo apt-get update && sudo apt-get install build-essential
 
@@ -20,9 +20,9 @@ Other modules included in `requirements.txt`
 
 ## jetcat_comms.py
 
-This is the main python script to use when running the engine. This script will send engine RPM commands, timestamp and save PRO-Interface data to .bin and .csv files, and create live animations of a few important measurements that should be watched during testing. You should not have to use `throttle_cmd_2.py` or `make_csvs.sh` anymore with this script.
+This is the main python script to use when running the engine. This script will send engine RPM commands, timestamp and save PRO-Interface data to `.bin` and `.csv` files, and create live animations of a few important measurements that should be watched during testing. You should not have to use `throttle_cmd_2.py` or `make_csvs.sh` anymore with this script.
 
-Setup a throttle command text file that follows the example below. You can insert expressions for time and RPM or percent for the throttle. The engine will always shut off at the last time stamp no matter what the RPM command is at that time.
+Setup a throttle command text file that follows the example below. You can insert expressions for time and RPM or percent for the throttle. The engine will always shut off at the last time stamp no matter what the RPM command is at that time. You must point to the path of this throttle curve file when calling the script at the terminal.
 
     Time, Throttle_RPM
     90, 40000
@@ -30,7 +30,7 @@ Setup a throttle command text file that follows the example below. You can inser
     2*60, 50000
     4*60, 0
 
-
+The script will save PRO-Interface data to a `.bin` and a `.csv` file. The `.bin` will be the raw, unprocessed data from the interface, while the `.csv` will be processed data that does not include any corrupted data packets. The live animation shown while running the test is created from the processed data that is eventually put into the `.csv`.
 
 ## throttle_cmd_2.py
 
@@ -52,7 +52,7 @@ The program will create a binary file to save PRO-Interface data, and a text fil
 
 ## make_csvs.sh
 
-Bash script to take all of the PRO-Interface, E-TC, and USB-6210 data in a folder and convert to .csv and .pickle files. It will save the .csv's in the same folder they were found in, and it searches all the subdirectories inside a folder. Don't use with any bin files that are empty. Double check it works. An example run is:
+Bash script to take all of the PRO-Interface, E-TC, and USB-6210 data in a folder and convert to `.csv` and `.pickle` files. It will save the .csv's in the same folder they were found in, and it searches all the subdirectories inside a folder. Don't use with any bin files that are empty. Double check it works. An example run is:
 
     bash ./src/make_csvs.sh ~/Documents/2023-02-22_JetCat_Test/
     Processing file: ./interface/2023-02-22_T121427_data.bin
@@ -73,7 +73,7 @@ Bash script to take all of the PRO-Interface, E-TC, and USB-6210 data in a folde
 
 ## make_plots.sh
 
-Bash script to take all the PRO-Interface, E-TC, and USB-6210 csv's in a folder and plot. This can only be ran after make_csvs.sh is ran. The .png files are saved in the same location as the data. Run the script with the full path to the directory, `bash ./src/make_plots.sh ~/Documents/GitHub/JetCat_Comms/data/2023-02-22_JetCat_Test/`
+Bash script to take all the PRO-Interface, E-TC, and USB-6210 csv's in a folder and plot. This can only be ran after `make_csvs.sh` is ran. The .png files are saved in the same location as the data. Run the script with the full path to the directory, `bash ./src/make_plots.sh ~/Documents/GitHub/JetCat_Comms/data/2023-02-22_JetCat_Test/`
 
 
 ## make_calibration_curve.sh
