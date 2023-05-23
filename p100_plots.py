@@ -17,8 +17,8 @@ thrust_4['Thrust [N]'] = -(10.65333140211067*thrust_4['V']+1.9284045823237697)
 print(thrust_4)
 print(egt_4)
 
-σ = 2
-print(σ)
+sigma = 2
+print(sigma)
 
 print(thrust_4.iloc[(thrust_4['Unit']-118).abs().argsort()[0]])
 thrust_4_timeshift = thrust_4[118000:]
