@@ -18,3 +18,4 @@ for i, file_path in enumerate(csv_files):
     plt.title(os.path.basename(file_path))
 
 plt.show()
+
