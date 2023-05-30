@@ -6,11 +6,11 @@ import shutil
 import pandas as pd
 import numpy as np
 
-from cffi import FFI
-from _crc.lib import get_crc16z
+# from cffi import FFI
+# from _crc.lib import get_crc16z
 
 
-ffibuilder = FFI()
+# ffibuilder = FFI()
 
 
 def make_filename(descrip):

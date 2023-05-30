@@ -24,7 +24,7 @@ import crc
 
 
 
-COM_PORT = 'COM3'
+COM_PORT = 'COM6'
 START_TIME = time.time()
 
 def main():
@@ -138,6 +138,7 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
     with serial.Serial(COM_PORT, baudrate=115200, timeout=.1) as ser, \
     open(bin_file_path, 'ab') as dat_file, \
     open(log_file_path, 'a') as log_file:
+        print("Start engine")
         start_engine(ser)
 
         cmd_counter = 0
@@ -212,8 +213,8 @@ def packet_to_csv(queue2, data_packet, csv_writer, START_TIME, crc_calc):
         if processed_packet[-1] == processed_packet[-2]:
             csv_writer.writerow(processed_packet)
             queue2.put(processed_packet)
-        else:
-            print("crc16's are not equal at "+str(time.time()))
+        # else:
+            # print("crc16's are not equal at "+str(time.time()))
 
 
 def byte_unstuffing(byte_array):
@@ -316,6 +317,8 @@ def start_engine(ser):
     # time. The sequence number will be 1 after this command is sent.
 
     # Command to start the P300-PRO with binary serial interface:
+    print(ser)
+    print("Sent")
     ser.write(b"\x7E\x01\x01\x01\x01\x02\x00\x01\x28\x30\x7E")
 
 
