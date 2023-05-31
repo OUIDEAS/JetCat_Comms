@@ -28,7 +28,7 @@ values = {"40aF": 40.001,
           "35aR": -35.001
           }
 now_more = datetime.datetime.today().strftime("%Y-%m-%dT%H%M%S")
-weight_order = ("40aF", "40aR", "40aR_40bF", "40bF_35aF", "40bF")
+weight_order = ("1_40aF", "2_40aR", "3_40aR_40bF", "4_40bF_35aF", "5_40bF")
 frames = []
 for i in range(len(weight_order)):
     is_ready = m2.prompt_weight(weight_order[i])
