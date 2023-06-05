@@ -24,7 +24,7 @@ import crc
 
 
 
-COM_PORT = 'COM6'
+COM_PORT = 'COM3'
 START_TIME = time.time()
 
 def main():
@@ -141,6 +141,7 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
         print("Start engine")
         start_engine(ser)
 
+        stop_flag = True
         cmd_counter = 0
         while True:
             data_packet = ser.read_until(b'\x7E\x7E')
@@ -150,7 +151,7 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
 
 
             # If enough time has elapsed, send a throttle command
-            if now > (START_TIME + cmd_array[cmd_counter, 0]):
+            if now > (START_TIME + cmd_array[cmd_counter, 0]) and stop_flag:
 
                 send_throttle_rpm(ser, log_file, cmd_array[cmd_counter, 1], cmd_counter, crc_calculator)
                 log_file.write(("Sent cmd at:" + str(now)) + "\n")
@@ -164,8 +165,11 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
 
 
 
-            if now > START_TIME + TEST_DURATION:
+            if now > START_TIME + TEST_DURATION and stop_flag:
                 stop_engine(ser)
+                stop_flag = False
+                cmd_counter = 0
+            if now > START_TIME + TEST_DURATION+15:
                 break
 
 
@@ -184,7 +188,7 @@ def csv_thread_func(queue1, queue2, csv_filename, START_TIME, TEST_DURATION, crc
             # Process the queue. Pull, process, timestamp, save to csv, animate.
             data_packet = queue1.get()
             packet_to_csv(queue2, data_packet, cw_writer, START_TIME, crc_calculator)
-            if time.time() > START_TIME + TEST_DURATION:
+            if time.time() > START_TIME + TEST_DURATION+15:
                 break
 
 
