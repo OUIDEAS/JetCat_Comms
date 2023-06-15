@@ -30,13 +30,11 @@ file_path = sys.argv[1] # Full path to file
 
 
 frame = pd.read_csv(file_path)
+print(frame)
 base_path, extension = os.path.splitext(file_path)
-# print(base_path)
-parent_directory = os.path.dirname(file_path)
-
-
+parent_directory = os.path.dirname(base_path)
 # Determine if the data is PRO-Interface, E-TC, or USB-6210
-if frame.columns[0] == "Engine_Address":
+if frame.columns[1] == "Engine_Address":
     # print("Interface Data")
     for col in frame.columns:
         plt.figure()
@@ -44,9 +42,10 @@ if frame.columns[0] == "Engine_Address":
             frame.plot(y=col, use_index=True, style='bo')
             plt.grid(True)
         else:
-            frame.plot(y=col, use_index=True, style='b-')
+            plt.plot(frame['Time'], frame[col], 'b-', label=col)
+            plt.legend()
             plt.grid(True)
-        save_fig2(base_path, col) # Want the name of data file in folder
+        save_fig2(parent_directory, col) # Want the name of data file in folder
         plt.close('all')
 
 elif frame.columns[1] == "Voltage":
@@ -58,7 +57,7 @@ elif frame.columns[1] == "Voltage":
     plt.close('all')
 
 
-
+plt.show()
 
 
 

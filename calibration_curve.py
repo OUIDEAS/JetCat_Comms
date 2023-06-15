@@ -11,8 +11,19 @@ import pandas as pd
 import sys
 import os
 import matplotlib.pyplot as plt
-import modules.data_analysis_m1 as m1
 
+def save_fig2(parent_directory, file_name, tight_layout=True,\
+    fig_extension="png", resolution=600):
+    """
+    Saves the figure inside a folder where the .csv file was found
+    """
+    IMAGES_PATH = os.path.join(parent_directory, "images")
+    os.makedirs(IMAGES_PATH, exist_ok=True)
+    path = os.path.join(IMAGES_PATH, file_name+"."+fig_extension)
+    if tight_layout:
+        plt.tight_layout()
+    plt.savefig(path, format=fig_extension, dpi=resolution)
+    print("Saving plots to ", path)
 
 folder_path = sys.argv[1] # Full path to file
 files = []
@@ -35,8 +46,8 @@ for file_name in os.listdir(folder_path):
         files.append(file_path)
 
 # Sort files according to the first number of their name
-sorted_files = sorted(files, key=lambda x: int(x.split('/')[-1].split('_')[0]))
-
+sorted_files = sorted(files, key=lambda x: int(x.split('\\')[-1].split('_')[0]))
+print(sorted_files)
 for file in sorted_files:
     frames.append(pd.read_csv(file))
     name = file.split('/')[-1].split('.')[0]
@@ -56,7 +67,7 @@ for expr in weights_used:
 
 
 
-x = np.array([frame["Voltage"].mean() for frame in frames])
+x = np.array([frame["Voltage [V]"].mean() for frame in frames])
 y = np.array(val_weights)
 
 # We have the data points now. Just get linear least squares of the data:
@@ -86,7 +97,7 @@ plt.title("Calibration Curve")
 plt.grid(True)
 plt.plot(x, slope*x+constant, 'r-', label="Fitted Line")
 plt.legend()
-m1.save_fig2(folder_path, "Calibration_Curve")
+save_fig2(folder_path, "Calibration_Curve")
 # plt.show()
 
 
