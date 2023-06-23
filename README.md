@@ -176,3 +176,11 @@ To run cffi, you need to run `main.py` inside the main `JetCat_Comms` directory 
 This is a bit of a mess right now. Run `main.py` to create the python .so library, then put that library in the same folder as the source code you're going to run, `import _crc.lib`
 
 The cffi library is currently only working on Linux. Not sure how to get it to work on windows, but it's something to do with the compiler.
+
+TODO:
+
+Send Dr. W two scripts:
+
+- One that sends commands to the PRO-interface from the throttle curve files. Does not record data from the PRO-Interface.
+
+- Another that turns PRO-Interface .bin files into .csv files 

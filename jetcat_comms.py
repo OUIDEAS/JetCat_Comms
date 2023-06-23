@@ -132,8 +132,6 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
     """
     Read the serial port of the PRO-Interface and save to a bin file. Push the
     data packets into the queue so that it can be processed in real time.
-
-    TODO: Add sending RPM commands
     """
     with serial.Serial(COM_PORT, baudrate=115200, timeout=.1) as ser, \
     open(bin_file_path, 'ab') as dat_file, \
