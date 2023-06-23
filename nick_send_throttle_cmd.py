@@ -1,4 +1,6 @@
-
+"""
+Sends throttle commands to the PRO-Interface from a throttle curve .txt file
+"""
 import numpy as np
 import pandas as pd
 import serial
