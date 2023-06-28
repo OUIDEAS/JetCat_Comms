@@ -48,24 +48,13 @@ if frame.columns[1] == "Engine_Address":
         save_fig2(parent_directory, col) # Want the name of data file in folder
         plt.close('all')
 
-elif frame.columns[1] == "Voltage":
+elif frame.columns[1] == "Voltage" or frame.columns[1] == "Voltage [V]":
     # print("USB-6210 Data")
     plt.figure()
-    frame.plot(x="Time [s]", y="Voltage", style='b-')
+    frame.plot(x="Time [s]", y=frame.columns[1], style='b-')
     plt.grid(True)
     save_fig2(parent_directory, frame.columns[1])
     plt.close('all')
 
 
 plt.show()
-
-
-
-
-
-
-
-
-
-
-
