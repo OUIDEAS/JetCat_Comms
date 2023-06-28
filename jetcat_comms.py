@@ -24,7 +24,7 @@ import crc
 
 
 
-COM_PORT = 'COM3'
+COM_PORT = 'COM6'
 START_TIME = time.time()
 
 def main():
