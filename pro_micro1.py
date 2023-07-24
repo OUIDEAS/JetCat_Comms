@@ -118,3 +118,29 @@ def parse_string_to_floats(input_str):
 
 if __name__ == '__main__':
     main()
+
+
+# Idea
+
+"""
+import datetime
+
+# Assuming you have the series of bytes stored in a variable called 'byte_data'
+# For demonstration purposes, I'll create an example bytes object here
+byte_data = b'87.60 -38.55 995.03\r87.60 -38.55 995.15\r87.60 -38.55 995.03\r87.72 -38.55 995.03\r87.84 -3'
+
+# Convert bytes to a string
+data_str = byte_data.decode('utf-8')
+
+# Get the current timestamp
+timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+# Add the timestamp after each \r
+data_with_timestamp = data_str.replace('\r', f'\r{timestamp} ')
+
+# Convert the string back to bytes
+byte_data_with_timestamp = data_with_timestamp.encode('utf-8')
+
+# Now, 'byte_data_with_timestamp' contains the original data with timestamps after each \r
+print(byte_data_with_timestamp)
+"""
