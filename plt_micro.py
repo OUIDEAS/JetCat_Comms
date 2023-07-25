@@ -4,9 +4,12 @@ import pandas as pd
 
 
 data_file = input("Put file path here: ")
-
-frame1 = pd.read_csv(data_file, names=["x", "y", "z"], skiprows=1, sep=' ', index_col=False)
+frame1 = pd.read_csv(data_file, names=["Time", "x", "y", "z"], skiprows=1, sep=' ', index_col=False)
 print(frame1)
+
+plt.figure()
+plt.plot(frame1['Time'])
+plt.title("Time")
 
 plt.figure()
 plt.plot(frame1['x'])

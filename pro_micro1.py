@@ -12,13 +12,14 @@ PRO_MICRO_COM_PORT = 'COM7'
 START_TIME = time.time()
 TEST_DURATION = 10
 END_TIME = START_TIME + TEST_DURATION
+START_DATETIME = datetime.datetime.now()
 
 def main():
 
 
 
 
-    data_file_path, log, csv = make_filenames()
+    data_file_path = make_pm1_filename(START_DATETIME)
     # with serial.Serial(PRO_MICRO_COM_PORT, baudrate=115200, timeout=.1) as ser, \
     #     open(data_file_path, 'ab') as dat_file:
     #     print("Serial port opened")
@@ -28,8 +29,8 @@ def main():
     #         print(data)
 
     queue1 = Queue(maxsize=0) # queue size is infinite
-    PMT_vars = (queue1, data_file_path, START_TIME, TEST_DURATION)
-    thread1 = threading.Thread(target=pro_micro_thread, args=PMT_vars)
+    PMT_vars = (PRO_MICRO_COM_PORT, queue1, data_file_path, START_TIME, TEST_DURATION)
+    thread1 = threading.Thread(target=pro_micro_thread_func, args=PMT_vars)
     thread1.start()
 
     while time.time() < END_TIME:
@@ -55,25 +56,28 @@ def main():
 
 
 
-def make_filenames():
+def make_pm1_filename(file_date_time):
     # Create directory & filename for the log file
-    now = datetime.datetime.now().strftime("%Y-%m-%d")
-    now_more = datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
+    now = file_date_time.strftime("%Y-%m-%d")
+    now_more = file_date_time.strftime("%Y-%m-%dT%H%M%S")
     FILE_PATH = os.path.join(".", "data", now, now_more )
     os.makedirs(FILE_PATH, exist_ok=True)
     acc_data = os.path.join(FILE_PATH, (now_more + "_data.txt" ))
-    log = os.path.join(FILE_PATH, (now_more + "_log.txt"))
-    csv = os.path.join(FILE_PATH, (now_more + "_data.csv"))
-    return acc_data, log, csv
+    return acc_data
 
-def pro_micro_thread(queue1, data_file_path,  START_TIME, TEST_DURATION):
+def pro_micro_thread_func(ser_port, queue1, data_file_path,  START_TIME, TEST_DURATION):
 
-    with serial.Serial(PRO_MICRO_COM_PORT, baudrate=115200, timeout=0.1) as ser, \
+    with serial.Serial(ser_port, baudrate=115200, timeout=0.1) as ser, \
     open(data_file_path, 'ab') as data_file:
         while time.time() < START_TIME + TEST_DURATION:
             data = ser.read(100)
-            data_file.write(data)
-            queue1.put(data)
+            data_str = data.decode('utf-8')
+            stamp = time.time()
+            data_with_timestamp = data_str.replace('\r\n', f'\r\n{stamp} ')
+            byte_data_with_timestamp = data_with_timestamp.encode('utf-8')
+            data_file.write(byte_data_with_timestamp)
+            queue1.put(data_with_timestamp)
+
             # print(data)
 
 def update_anim(frame, x,y,z, queue1, ax, ax2, ax3, START_TIME, TEST_DURATION):

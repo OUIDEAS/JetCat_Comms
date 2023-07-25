@@ -47,6 +47,7 @@ void setup()
 
   // Uncomment the next line to use 400kHz I2C. Essential when running the accel and gyro at 416Hz or faster.
 	Wire.setClock(400000);
+	// Wire.setClock(1700000);
 
 	Serial.begin(115200);
 

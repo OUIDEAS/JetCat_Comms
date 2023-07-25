@@ -21,17 +21,20 @@ import datetime
 import csv
 import struct
 import crc
-
+import pro_micro1 as pm1
 
 
 COM_PORT = 'COM4'
+PRO_MICRO_COM_PORT = 'COM7'
 START_TIME = time.time()
+START_DATETIME = datetime.datetime.now()
 
 def main():
 
-    data_filename, log_filename, csv_filename = make_filenames()
+    data_filename, log_filename, csv_filename = make_filenames(START_DATETIME)
     queue1 = Queue(maxsize=0) # queue size is infinite
     queue2 = Queue(maxsize=0) # queue size is infinite
+    acc_queue = Queue(maxsize=0) # queue size is infinite
     config = crc.Configuration(
         width=16,
         polynomial=0x1021,
@@ -57,9 +60,16 @@ def main():
         thread2_args = (queue1, queue2, csv_filename, START_TIME, TEST_DURATION, crc_calculator,)
         thread2 = threading.Thread(target=csv_thread_func, args=thread2_args)
 
+        # Spawn pro micro thread
+        acc_data_file = pm1.make_pm1_filename(START_DATETIME)
+        thread3_args = (PRO_MICRO_COM_PORT, acc_queue, acc_data_file, START_TIME, TEST_DURATION)
+        thread3 = threading.Thread(target=pm1.pro_micro_thread_func(), args=thread3_args)
+
         thread1.start()
         time.sleep(.1)
         thread2.start()
+        time.sleep(.1)
+        thread3.start()
 
         # CSV is being written to, let's plot...
         time.sleep(.5)
@@ -324,10 +334,10 @@ def start_engine(ser):
     ser.write(b"\x7E\x01\x01\x01\x01\x02\x00\x01\x28\x30\x7E")
 
 
-def make_filenames():
+def make_filenames(file_date_time):
     # Create directory & filename for the log file
-    now = datetime.datetime.now().strftime("%Y-%m-%d")
-    now_more = datetime.datetime.now().strftime("%Y-%m-%dT%H%M%S")
+    now = file_date_time.strftime("%Y-%m-%d")
+    now_more = file_date_time.strftime("%Y-%m-%dT%H%M%S")
     FILE_PATH = os.path.join(".", "data", now, now_more )
     os.makedirs(FILE_PATH, exist_ok=True)
     bin_data = os.path.join(FILE_PATH, (now_more + "_data.bin" ))
