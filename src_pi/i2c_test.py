@@ -3,13 +3,14 @@
 # Pi Wedge breakout board and a SparkFun MCP4725 breakout board:
 # https://www.sparkfun.com/products/8736
 
+import RPi.GPIO as GPIO
 import smbus
 
 # I2C channel 1 is connected to the GPIO pins
 channel = 1
 
 #  MCP4725 defaults to address 0x60
-address = 0x60
+address = 0x6b
 
 # Register addresses (with "normal mode" power-down bits)
 reg_write_dac = 0x40
