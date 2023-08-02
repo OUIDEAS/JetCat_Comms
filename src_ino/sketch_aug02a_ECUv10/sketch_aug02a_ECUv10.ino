@@ -15,14 +15,14 @@ void loop() {
   }
   if (Serial.available()) {
 //    Serial.println("Ser available");
-    int pwm_val = Serial.parseInt();
+    int pwm_val = Serial.readString().toInt();
     Serial.print("Wrote value ");
     Serial.print(pwm_val);
     Serial.println(" to PWM pin");
-    int waste = Serial.parseInt();
+//    int waste = Serial.parseInt();
     flag = 0;
     analogWrite(8, pwm_val);
-    
+//     x = Serial.readString().toInt();
   }
 //  delay(1000);
 

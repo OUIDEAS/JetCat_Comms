@@ -24,7 +24,7 @@ import crc
 import pro_micro1 as pm1
 
 
-COM_PORT = 'COM4'
+COM_PORT = 'COM3'
 PRO_MICRO_COM_PORT = 'COM7'
 ARDUINO_COM_PORT = 'COM5'
 START_TIME = time.time()
@@ -64,7 +64,7 @@ def main():
         # Spawn pro micro thread
         acc_data_file = pm1.make_pm1_filename(START_DATETIME)
         thread3_args = (PRO_MICRO_COM_PORT, acc_queue, acc_data_file, START_TIME, TEST_DURATION)
-        thread3 = threading.Thread(target=pm1.pro_micro_thread_func(), args=thread3_args)
+        thread3 = threading.Thread(target=pm1.pro_micro_thread_func, args=thread3_args)
 
         # Spawn arduino thread, send engine RPM commands
         thread4_args = (ARDUINO_COM_PORT,START_TIME, TEST_DURATION, cmd_array)
@@ -72,25 +72,25 @@ def main():
 
         thread1.start()
         time.sleep(.1)
-        thread2.start()
-        time.sleep(.1)
+        # thread2.start()
+        # time.sleep(.1)
         thread3.start()
         time.sleep(.1)
         thread4.start()
 
         # CSV is being written to, let's plot...
         time.sleep(.5)
-        fig = plt.figure()
-        ax = fig.add_subplot(2,2,1)
-        ax2 = fig.add_subplot(2,2,2)
-        ax3 = fig.add_subplot(2,2,3)
-        ax4 = fig.add_subplot(2,2,4)
+        # fig = plt.figure()
+        # ax = fig.add_subplot(2,2,1)
+        # ax2 = fig.add_subplot(2,2,2)
+        # ax3 = fig.add_subplot(2,2,3)
+        # ax4 = fig.add_subplot(2,2,4)
 
-        data = []
-        ani_args = (data, queue2, ax,ax2,ax3,ax4, START_TIME, TEST_DURATION)
-        ani = animation.FuncAnimation(fig, update_anim, fargs=ani_args, interval = 100, blit=False, save_count=10)
-        fig.tight_layout()
-        plt.show()
+        # data = []
+        # ani_args = (data, queue2, ax,ax2,ax3,ax4, START_TIME, TEST_DURATION)
+        # ani = animation.FuncAnimation(fig, update_anim, fargs=ani_args, interval = 100, blit=False, save_count=10)
+        # fig.tight_layout()
+        # plt.show()
     else:
         print("Not starting engine...")
 
@@ -140,11 +140,11 @@ def crc16_testing1():
 
 def arduino_thread_func(arduino_com, START_TIME, TEST_DURATION, cmd_array,):
     with serial.Serial(arduino_com, baudrate=115200, timeout=.1) as ser:
-        print("Start engine")
+        print("Starting engine...")
         ECUv10_start_engine(ser)
 
         stop_flag = True
-        cmd_counter = 0
+        cmd_counter = 1 # Init to one so you don't send the zero command
         while True:
             # data_packet = ser.read_until(b'\x7E\x7E')
             # dat_file.write(data_packet)
@@ -155,7 +155,8 @@ def arduino_thread_func(arduino_com, START_TIME, TEST_DURATION, cmd_array,):
             # If enough time has elapsed, send a throttle command
             if now > (START_TIME + cmd_array[cmd_counter, 0]) and stop_flag:
 
-                send_throttle_rpm(ser, log_file, cmd_array[cmd_counter, 1], cmd_counter, crc_calculator)
+                # send_throttle_rpm(ser, log_file, cmd_array[cmd_counter, 1], cmd_counter, crc_calculator)
+                ECUv10_send_command(ser, cmd_array[cmd_counter, 1])
                 cmd_counter = cmd_counter + 1
 
 
@@ -164,7 +165,7 @@ def arduino_thread_func(arduino_com, START_TIME, TEST_DURATION, cmd_array,):
 
 
             if now > START_TIME + TEST_DURATION and stop_flag:
-                stop_engine(ser)
+                ECUv10_stop_engine(ser)
                 stop_flag = False
                 cmd_counter = 0
             if now > START_TIME + TEST_DURATION+15:
@@ -183,8 +184,8 @@ def interface_port_thread_func(queue1, bin_file_path, log_file_path,  START_TIME
     with serial.Serial(COM_PORT, baudrate=115200, timeout=.1) as ser, \
     open(bin_file_path, 'ab') as dat_file, \
     open(log_file_path, 'a') as log_file:
-        print("Start engine")
-        start_engine(ser)
+        # print("Start engine")
+        # start_engine(ser)
 
         # stop_flag = True
         # cmd_counter = 0
@@ -371,14 +372,22 @@ def start_engine(ser):
     ser.write(b"\x7E\x01\x01\x01\x01\x02\x00\x01\x28\x30\x7E")
 
 def ECUv10_start_engine(arduino_ser):
-    
-    arduino_ser.write(b'\n')
-    arduino_ser.write(b'120\n')
+    arduino_ser.write(bytes('0', 'utf-8'))
+    # arduino_ser.write(b'\n')
+    time.sleep(2)
+    arduino_ser.write(bytes('120', 'utf-8'))
+    time.sleep(2)
+    arduino_ser.write(bytes('220', 'utf-8'))
 
 def ECUv10_send_command(arduino_ser, RPM):
-    duty_cycle = (120-220)/(154e3-38.5e3)*RPM+259.2
-    arduino_ser.write(bytes(duty_cycle))
-    arduino_ser.write(b"\n")
+    duty_cycle = int((120-220)/(154e3-38.5e3)*RPM+259.2)
+    duty_cycle = str(duty_cycle)
+    print("Duty cycle sending: ", duty_cycle)
+    arduino_ser.write(bytes(duty_cycle, 'utf-8'))
+    # arduino_ser.write(b"\n")
+
+def ECUv10_stop_engine(arduino_ser):
+    arduino_ser.write(b'0')
 
 def make_filenames(file_date_time):
     # Create directory & filename for the log file
