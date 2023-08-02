@@ -18,6 +18,9 @@ import datetime
 import csv
 import struct
 import crc
+
+sys.path.insert(1, '.')
+
 import pro_micro1 as pm1
 import jetcat_comms as jcc
 
