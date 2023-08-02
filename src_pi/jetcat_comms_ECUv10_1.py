@@ -23,7 +23,7 @@ sys.path.insert(1, '.')
 
 import pro_micro1 as pm1
 import jetcat_comms as jcc
-
+GPIO.setwarnings(False)
 
 def main():
     GPIO.setmode(GPIO.BOARD)
@@ -31,7 +31,7 @@ def main():
     thr_ch_pin = 12
 
     GPIO.setup(thr_ch_pin, GPIO.OUT)
-    GPIO.setwarnings(False)
+    # GPIO.setwarnings(False)
     thr_ch_pwm = GPIO.PWM(thr_ch_pin, 1000)
     thr_ch_pwm.start(0)
 
