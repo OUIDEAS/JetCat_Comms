@@ -45,7 +45,7 @@ def main():
         START_TIME = time.time()
         ECUv10_start_engine()
         stop_flag = True
-
+        cmd_counter = 0
         while time.time() < START_TIME + TEST_DURATION:
             # If enough time has elapsed, send a throttle command
             now = time.time()
