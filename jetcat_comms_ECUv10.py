@@ -375,6 +375,8 @@ def ECUv10_start_engine(arduino_ser):
     arduino_ser.write(bytes('0', 'utf-8'))
     # arduino_ser.write(b'\n')
     time.sleep(2)
+    arduino_ser.write(bytes('220', 'utf-8'))
+    time.sleep(2)
     arduino_ser.write(bytes('120', 'utf-8'))
     time.sleep(2)
     arduino_ser.write(bytes('220', 'utf-8'))
