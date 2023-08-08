@@ -192,7 +192,7 @@ def interface_port_thread_func_ascii(queue1, bin_file_path, log_file_path,  STAR
     data packets into the queue so that it can be processed in real time.
     Also send RPM commands when required. Use jetCat's binary protocol.
     """
-    with serial.Serial(COM_PORT, baudrate=115200, timeout=.1) as ser, \
+    with serial.Serial(COM_PORT, baudrate=9600, timeout=.1) as ser, \
     open(bin_file_path, 'ab') as dat_file, \
     open(log_file_path, 'a') as log_file:
         print("Starting engine via ascii protocol...")
