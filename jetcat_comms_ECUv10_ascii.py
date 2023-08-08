@@ -195,7 +195,7 @@ def interface_port_thread_func_ascii(queue1, bin_file_path, log_file_path,  STAR
     with serial.Serial(COM_PORT, baudrate=115200, timeout=.1) as ser, \
     open(bin_file_path, 'ab') as dat_file, \
     open(log_file_path, 'a') as log_file:
-        print("Starting engine...")
+        print("Starting engine via ascii protocol...")
         start_engine_ascii_protocol(ser)
 
         stop_flag = True
@@ -206,7 +206,8 @@ def interface_port_thread_func_ascii(queue1, bin_file_path, log_file_path,  STAR
             ser.write(b'1,RFI,1\n') # Read fuel info command
             data_packet = ser.read(ser.in_waiting)
             dat_file.write(data_packet)
-            dat_file.write(now)
+            # dat_file.write(bytes(str(now)))
+
             # queue1.put(data_packet)
 
 
@@ -494,7 +495,7 @@ def make_filenames(file_date_time):
 def get_user_input_y_n(prompt):
     while True:
         response = input(prompt)
-        if response.lower not in ('y', 'n'):
+        if response.lower() not in ('y', 'n'):
             print("Invalid response.")
             continue
         else:
@@ -504,7 +505,7 @@ def get_user_input_y_n(prompt):
 def get_user_input_bin_ascii(prompt):
     while True:
         response = input(prompt)
-        if response.lower not in ('binary', 'ascii'):
+        if response.lower() not in ('binary', 'ascii'):
             print("Invalid response.")
             continue
         else:
