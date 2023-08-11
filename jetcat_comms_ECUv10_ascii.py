@@ -17,8 +17,8 @@ import crc
 import pro_micro1 as pm1
 
 
-COM_PORT = 'COM8'
-PRO_MICRO_COM_PORT = 'COM7'
+COM_PORT = 'COM3'
+PRO_MICRO_COM_PORT = 'COM8'
 START_DATETIME = datetime.datetime.now()
 
 def main():
@@ -76,11 +76,11 @@ def main():
 
         if pro_micro_c_used.lower() == 'y':
             # Spawn pro micro thread
-            thread3_args = (PRO_MICRO_COM_PORT, acc_queue, acc_data_filename, START_TIME, TEST_DURATION)
-            thread3 = threading.Thread(target=pm1.pro_micro_thread_func(), args=thread3_args)
+            thread3_args = (PRO_MICRO_COM_PORT, acc_queue, acc_data_filename, START_TIME, TEST_DURATION,)
+            thread3 = threading.Thread(target=pro_micro_thread_func, args=thread3_args)
             thread3.start()
 
-        if using_live_plotting.lower() == 'y':
+        if using_live_plotting.lower() == 'y' and comms_protocol.lower() == 'binary':
             fig = plt.figure()
             ax = fig.add_subplot(2,2,1)
             ax2 = fig.add_subplot(2,2,2)
@@ -199,14 +199,14 @@ def interface_port_thread_func_ascii(queue1, bin_file_path, log_file_path,  STAR
         start_engine_ascii_protocol(ser)
 
         stop_flag = True
-        cmd_counter = 0
+        cmd_counter = 1
         while True:
             now = time.time()
-            ser.write(b'1,RAC,1\n') # Read actual values command
-            ser.write(b'1,RFI,1\n') # Read fuel info command
+            ser.write(b'1,RAC,1\r') # Read actual values command
+            ser.write(b'1,RFI,1\r') # Read fuel info command
             data_packet = ser.read(ser.in_waiting)
             dat_file.write(data_packet)
-            # dat_file.write(bytes(str(now)))
+            dat_file.write(bytes(str(now), 'utf-8'))
 
             # queue1.put(data_packet)
 
@@ -224,7 +224,20 @@ def interface_port_thread_func_ascii(queue1, bin_file_path, log_file_path,  STAR
             if now > START_TIME + TEST_DURATION+15: # Collect data after the engine stops...
                 break
 
+def pro_micro_thread_func(ser_port, queue1, data_file_path,  START_TIME, TEST_DURATION):
 
+    with serial.Serial(ser_port, baudrate=115200, timeout=0.1) as ser, \
+    open(data_file_path, 'ab') as data_file:
+        while time.time() < START_TIME + TEST_DURATION:
+            data = ser.read(100)
+            data_str = data.decode('utf-8')
+            stamp = time.time()
+            data_with_timestamp = data_str.replace('\r\n', f'\r\n{stamp} ')
+            byte_data_with_timestamp = data_with_timestamp.encode('utf-8')
+            data_file.write(byte_data_with_timestamp)
+            queue1.put(data_with_timestamp)
+
+            # print(data)
 
 
 
@@ -289,13 +302,14 @@ def start_engine_binary_protocol(ser):
     ser.write(b"\x7E\x01\x01\x01\x01\x02\x00\x01\x28\x30\x7E")
 
 def start_engine_ascii_protocol(ser):
-    ser.write(b'1,tco,1\n')
+    ser.write(b'1,TCO,1\r')
 
 def stop_engine_binary_protocol(ser):
     ser.write(b"\x7E\x01\x01\x01\x01\x02\x00\x00\x39\xB9\x7E")
 
 def stop_engine_ascii_protocol(ser):
-    ser.write(b'1,tco,0\n')
+    ser.write(b'1,TCO,0\r')
+    print("Engine shutdown!")
 
 def send_throttle_rpm_binary_protocol(ser, log_file, cmd_array, cmd_counter, crc_calculator, now):
     # Send the P300-PRO any throttle command.
@@ -345,9 +359,11 @@ def send_throttle_rpm_ascii_protocol(ser, log_file, cmd_array, cmd_counter, now)
     log_file.write(str(now) + "\n")
     log_file.write(("Time:" + str(cmd_array[cmd_counter, 0])) + "\n")
     log_file.write("RPM sent: " + str(throttle_rpm)+"\n")
+    log_file.write('1,WRP,'+str(throttle_rpm)+'\r')
     log_file.write("\n")
-    ser.write(b'1,wrp,'+bytes(throttle_rpm)+b'\n')
-
+    packet = bytes('1,WRP,'+str(throttle_rpm)+'\r', 'utf-8')
+    ser.write(packet)
+    print("Sent command " + str(throttle_rpm)+" RPM")
 
 
 def stuff_header(header_bytes):

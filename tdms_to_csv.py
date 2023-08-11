@@ -12,6 +12,7 @@ import sys
 import pandas as pd
 from nptdms import TdmsFile
 from nptdms import tdms
+import matplotlib.pyplot as plt
 
 def tdms_to_frame(file_path):
     tdms_data = TdmsFile.read(file_path)
@@ -48,23 +49,26 @@ def tdms_to_frame(file_path):
         group_names = []
         for group in ni_groups:
             group_names.append(group.name)
-        # print("NI group names: ")
-        # print(group_names, "\n")
+        print("NI group names: ")
+        print(group_names, "\n")
 
         ni_group1 = tdms_data[group_names[0]]
         ni_g1_allchannels = ni_group1.channels()
         channel_names = []
         for channel in ni_g1_allchannels:
             channel_names.append(channel.name)
-        # print("NI channel names: ")
-        # print(channel_names, "\n")
+        print("NI channel names: ")
+        print(channel_names, "\n")
         ni_g1_chan1 = ni_group1[channel_names[0]]
+        ni_g1_chan2 = ni_group1[channel_names[1]]
 
         # These are numpy ndarrays
         ni_g1_ai0_time = ni_g1_chan1.time_track()
         ni_g1_ai0_v = ni_g1_chan1[:]
+        ni_g1_ai1_v = ni_g1_chan2[:]
         frame = pd.DataFrame({'Time [s]': ni_g1_ai0_time,
-                              'Voltage': ni_g1_ai0_v})
+                              'Voltage': ni_g1_ai0_v,
+                              'Voltage_ai1' : ni_g1_ai1_v})
         return frame
 
 file_path = sys.argv[1] # Full path to file
@@ -77,3 +81,11 @@ frame.to_csv(base_path + ".csv", index=False) # Write csv to same location
 
 with open (base_path+'.pickle', 'wb') as handle:
     pickle.dump(frame, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+plt.figure()
+plt.plot(frame["Time [s]"], frame["Voltage"])
+
+plt.figure()
+plt.plot(frame["Time [s]"], frame["Voltage_ai1"])
+
+plt.show()
