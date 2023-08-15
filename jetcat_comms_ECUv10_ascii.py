@@ -192,7 +192,7 @@ def interface_port_thread_func_ascii(queue1, bin_file_path, log_file_path,  STAR
     data packets into the queue so that it can be processed in real time.
     Also send RPM commands when required. Use jetCat's binary protocol.
     """
-    with serial.Serial(COM_PORT, baudrate=9600, timeout=.1) as ser, \
+    with serial.Serial(COM_PORT, baudrate=9600, timeout=.5) as ser, \
     open(bin_file_path, 'ab') as dat_file, \
     open(log_file_path, 'a') as log_file:
         print("Starting engine via ascii protocol...")
@@ -202,13 +202,18 @@ def interface_port_thread_func_ascii(queue1, bin_file_path, log_file_path,  STAR
         cmd_counter = 1
         while True:
             now = time.time()
-            ser.write(b'1,RAC,1\r') # Read actual values command
-            ser.write(b'1,RFI,1\r') # Read fuel info command
-            data_packet = ser.read(ser.in_waiting)
-            dat_file.write(data_packet)
-            dat_file.write(bytes(str(now), 'utf-8'))
 
-            # queue1.put(data_packet)
+            dat_file.write(bytes("{:.8f}\n".format(now), 'utf-8'))
+            ser.write(b'1,RAC,1\r') # Read actual values command
+            data_packet = ser.read_until(b'\r') # Block until all data is recieved so timestamps are not everywhere
+            data_packet = data_packet + ser.read_until(b'\r')
+            dat_file.write(data_packet)
+
+            ser.write(b'1,RFI,1\r') # Read fuel info command
+            data_packet = ser.read_until(b'\r') # Block until all data is recieved so timestamps are not everywhere
+            data_packet = data_packet + ser.read_until(b'\r')
+            dat_file.write(data_packet)
+
 
 
             # If enough time has elapsed, send a throttle command
@@ -358,6 +363,7 @@ def send_throttle_rpm_ascii_protocol(ser, log_file, cmd_array, cmd_counter, now)
     throttle_rpm = cmd_array[cmd_counter, 1]
     log_file.write(str(now) + "\n")
     log_file.write(("Time:" + str(cmd_array[cmd_counter, 0])) + "\n")
+    log_file.write("Epoch Time: " + "{:.8f}\n".format(now))
     log_file.write("RPM sent: " + str(throttle_rpm)+"\n")
     log_file.write('1,WRP,'+str(throttle_rpm)+'\r')
     log_file.write("\n")
